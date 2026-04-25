@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart City System</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<style>
+    body {
+    font-family: Arial;
+    margin: 0;
+    background: #f4f6f9;
+}
+
+header {
+    background: #2c3e50;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+
+nav button {
+    margin: 10px;
+    padding: 10px 20px;
+    border: none;
+    background: #3498db;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.section {
+    padding: 20px;
+}
+
+.hidden {
+    display: none;
+}
+
+form {
+    max-width: 400px;
+    margin: auto;
+}
+
+input, textarea {
+    width: 100%;
+    margin: 10px 0;
+    padding: 10px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background: #27ae60;
+    color: white;
+    border: none;
+}
+
+.dashboard {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    width: 200px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    text-align: center;
+}
+</style>
+<body>
+
+<header>
+    <h1>Smart City Management</h1>
+    <nav>
+        <button onclick="showSection('citizen')">Citizen</button>
+        <button onclick="showSection('event')">Event Holder</button>
+        <button onclick="showSection('admin')">Admin</button>
+    </nav>
+</header>
+
+<!-- Citizen Section -->
+<section id="citizen" class="section">
+    <h2>Citizen Portal</h2>
+    <form id="complaintForm">
+        <input type="text" placeholder="Your Name" required>
+        <textarea placeholder="Report Issue (Bin/Event)" required></textarea>
+        <button type="submit">Submit Complaint</button>
+    </form>
+</section>
+
+<!-- Event Holder Section -->
+<section id="event" class="section hidden">
+    <h2>Event Reporting</h2>
+    <form id="eventForm">
+        <input type="text" placeholder="Event Name" required>
+        <input type="date" required>
+        <textarea placeholder="Event Details" required></textarea>
+        <button type="submit">Report Event</button>
+    </form>
+</section>
+
+<!-- Admin Section -->
+<section id="admin" class="section hidden">
+    <h2>Admin Dashboard</h2>
+
+    <div class="dashboard">
+        <div class="card">
+            <h3>Municipal Dashboard</h3>
+            <p>View Complaints & Take Action</p>
+        </div>
+
+        <div class="card">
+            <h3>Traffic Dashboard</h3>
+            <p>Monitor Traffic Prediction</p>
+        </div>
+
+        <div class="card">
+            <h3>Alerts & Notifications</h3>
+            <p>Send alerts to users</p>
+        </div>
+    </div>
+</section>
+
+<script>
+    function showSection(sectionId) {
+    document.querySelectorAll('.section').forEach(sec => {
+        sec.classList.add('hidden');
+    });
+
+    document.getElementById(sectionId).classList.remove('hidden');
+}
+
+// Fake form submission (connect API later)
+document.getElementById("complaintForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    alert("Complaint Submitted!");
+});
+
+document.getElementById("eventForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    alert("Event Reported!");
+});
+</script>
+</body>
+</html>

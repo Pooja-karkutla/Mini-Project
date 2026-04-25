@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard – RapidEco</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--green:#7dba3f;--green-bright:#9be15d;--bg:#0f1a0f;--card:#1c2a0c;--border:#2e4414;--text:#e8f5d0;--muted:#8aac60;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding:24px;}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.topbar h2{font-family:'Syne',sans-serif;font-size:22px;color:var(--green-bright);}
+.live-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:20px;background:#0a2f1a;border:1px solid var(--green);
+  font-size:12px;color:var(--green-bright);font-weight:600;
+}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--green-bright);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.summary{display:flex;gap:14px;margin-bottom:24px;flex-wrap:wrap;}
+.box{flex:1;min-width:110px;padding:18px;border-radius:12px;text-align:center;border:1px solid var(--border);}
+.box p{font-size:28px;font-weight:800;font-family:'Syne',sans-serif;}
+.box span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.total{background:#1c2a0c;}.b-pending{background:#2a1e00;}
+.b-resolved{background:#0a2f1a;}.b-rejected{background:#2a0a0a;}
+.b-inprog{background:#0a1f3a;}.b-redzone{background:#2a0000;}
+
+.redzone-banner{
+  display:none;align-items:center;gap:10px;
+  background:#1a0000;border:1px solid #cc2222;
+  border-radius:10px;padding:12px 18px;margin-bottom:20px;
+  color:#ff6666;font-size:13px;font-weight:600;
+}
+
+.filters{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filters select{
+  padding:8px 12px;background:#131f0e;border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;
+  cursor:pointer;
+}
+.filters select:focus{border-color:var(--green);}
+.refresh-btn{
+  padding:8px 16px;background:var(--card);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;
+  transition:border-color .2s;
+}
+.refresh-btn:hover{border-color:var(--green);}
+
+.section-label{
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:.6px;text-transform:uppercase;margin:20px 0 10px;
+}
+.section-label.red{color:#ff5555;}
+.section-label.normal{color:var(--muted);}
+
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:28px;}
+table{width:100%;border-collapse:collapse;min-width:960px;}
+th,td{border-bottom:1px solid var(--border);padding:10px 12px;text-align:left;font-size:12px;}
+th{background:#1c2a0c;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;}
+tr.redzone-row{background:rgba(180,0,0,.09)!important;}
+tr.redzone-row:hover{background:rgba(180,0,0,.16)!important;}
+tr:hover{background:rgba(125,186,63,.04);}
+
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;}
+.badge-pending{background:#3a2800;color:#f0a500;}
+.badge-resolved{background:#0a2f1a;color:#5cd68a;}
+.badge-rejected{background:#2a0a0a;color:#ff5555;}
+.badge-in-progress{background:#0a1f3a;color:#63b3ed;}
+.badge-high{background:#3a0000;color:#ff4444;border:1px solid #7a1111;}
+.badge-normal{background:#1c2a0c;color:var(--muted);}
+
+img.thumb{width:52px;height:38px;object-fit:cover;border-radius:5px;border:1px solid var(--border);}
+.no-img{color:var(--muted);font-size:10px;}
+.worker-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;
+  background:rgba(125,186,63,.15);color:var(--green-bright);border:1px solid rgba(125,186,63,.3);
+}
+.no-worker-pill{font-size:10px;color:var(--muted);}
+
+.read-only-note{
+  display:inline-block;padding:4px 10px;border-radius:8px;
+  background:#1c2a0c;border:1px solid var(--border);
+  font-size:10px;color:var(--muted);font-style:italic;
+}
+
+.time-cell{font-size:10px;color:var(--muted);line-height:1.7;}
+.time-cell b{color:var(--text);}
+
+.map-wrap{position:relative;}
+.map-legend{
+  position:absolute;top:10px;right:10px;z-index:999;
+  background:rgba(15,26,15,.92);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;font-size:11px;pointer-events:none;
+}
+.map-legend div{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.dot-red{background:#cc2222;}.dot-green{background:#7dba3f;}
+#map{height:400px;border-radius:14px;border:1px solid var(--border);}
+.loading{text-align:center;padding:40px;color:var(--muted);}
+
+.last-updated{font-size:11px;color:var(--muted);margin-left:auto;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h2>🛡 Admin Dashboard</h2>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div class="live-badge"><div class="pulse"></div> Live — Auto-refreshing</div>
+    <span class="last-updated" id="lastUpdated">—</span>
+    <button class="refresh-btn" onclick="loadReports()">⟳ Refresh Now</button>
+  </div>
+</div>
+
+<div class="redzone-banner" id="redzoneAlert">
+  <span>🔴</span>
+  <div>
+    <span id="redzoneCount">0</span> complaint(s) unresolved for over 24 hours —
+    <strong>Red Zone / High Priority</strong>. Municipal team has been flagged.
+  </div>
+</div>
+
+<div class="summary">
+  <div class="box total"><p id="cnt-total">—</p><span>Total</span></div>
+  <div class="box b-pending"><p id="cnt-pending">—</p><span>Pending</span></div>
+  <div class="box b-inprog"><p id="cnt-inprog">—</p><span>In Progress</span></div>
+  <div class="box b-resolved"><p id="cnt-resolved">—</p><span>Resolved</span></div>
+  <div class="box b-rejected"><p id="cnt-rejected">—</p><span>Rejected</span></div>
+  <div class="box b-redzone"><p id="cnt-redzone">—</p><span>🔴 Red Zone</span></div>
+</div>
+
+<div class="filters">
+  <select id="filterType" onchange="applyFilter()">
+    <option value="">All Types</option>
+    <option value="waste">🚮 Waste</option>
+    <option value="traffic">🚦 Traffic</option>
+  </select>
+  <select id="filterStatus" onchange="applyFilter()">
+    <option value="">All Statuses</option>
+    <option value="Pending">Pending</option>
+    <option value="In Progress">In Progress</option>
+    <option value="Resolved">Resolved</option>
+    <option value="Rejected">Rejected</option>
+  </select>
+  <select id="filterPriority" onchange="applyFilter()">
+    <option value="">All Priorities</option>
+    <option value="High">🔴 High Priority only</option>
+    <option value="Normal">Normal only</option>
+  </select>
+  <select id="filterWorker" onchange="applyFilter()">
+    <option value="">All Worker Status</option>
+    <option value="assigned">Worker Assigned</option>
+    <option value="unassigned">No Worker Yet</option>
+  </select>
+</div>
+
+<!-- HIGH PRIORITY TABLE -->
+<div id="highPrioritySection" style="display:none;">
+  <div class="section-label red">🔴 High Priority / Red Zone — Unresolved &gt; 24 Hours</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>User</th><th>Type</th><th>Description</th><th>Location</th>
+          <th>Reported At</th><th>Time Elapsed</th><th>Worker Assigned</th>
+          <th>Image</th><th>Priority</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="highTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ALL REPORTS TABLE -->
+<div class="section-label normal">All Reports <span class="read-only-note">View-only — Status is updated by Municipal</span></div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>User</th><th>Type</th><th>Description</th><th>Location</th>
+        <th>Reported At</th><th>Resolved At</th><th>Worker Assigned</th>
+        <th>Image</th><th>Priority</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="adminTable"><tr><td colspan="11" class="loading">Loading…</td></tr></tbody>
+  </table>
+</div>
+
+<div class="map-wrap">
+  <div class="map-legend">
+    <div><div class="dot dot-red"></div> Red Zone (&gt;24h unresolved)</div>
+    <div><div class="dot dot-green"></div> Normal complaint</div>
+  </div>
+  <div id="map"></div>
+</div>
+
+<script>
+const API = 'http://localhost:5000';
+let allData = [];
+let map;
+
+function fmtTime(iso){
+  if(!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
+    + ' ' + d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+}
+
+function elapsedHtml(iso){
+  if(!iso) return '—';
+  const ms = Date.now() - new Date(iso).getTime();
+  const h  = Math.floor(ms/3600000);
+  const m  = Math.floor((ms%3600000)/60000);
+  if(h >= 24){
+    const d = Math.floor(h/24);
+    return `<span style="color:#ff5555;font-weight:700;">${d}d ${h%24}h ${m}m ⚠️</span>`;
+  }
+  return `${h}h ${m}m`;
+}
+
+function isRedZone(r){
+  if(r.isRedZone) return true;
+  if(['Pending','In Progress'].includes(r.status) && (r.reportedAt||r.createdAt)){
+    return (Date.now() - new Date(r.reportedAt||r.createdAt).getTime()) >= 24*60*60*1000;
+  }
+  return false;
+}
+
+function badgeHtml(status){
+  const m = {Pending:'badge-pending',Resolved:'badge-resolved',Rejected:'badge-rejected','In Progress':'badge-in-progress'};
+  return `<span class="badge ${m[status]||'badge-pending'}">${status||'Pending'}</span>`;
+}
+
+function priorityBadge(r){
+  return isRedZone(r)
+    ? `<span class="badge badge-high">🔴 High</span>`
+    : `<span class="badge badge-normal">Normal</span>`;
+}
+
+function workerCell(r){
+  return r.assignedWorker
+    ? `<span class="worker-pill">👷 ${r.assignedWorker}</span>`
+    : `<span class="no-worker-pill">Not assigned</span>`;
+}
+
+async function loadReports(){
+  try{
+    const res = await fetch(`${API}/report`);
+    allData = await res.json();
+  } catch(e){ allData=[]; }
+  updateSummary(allData);
+  applyFilter();
+  initMap(allData);
+  document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString('en-IN');
+}
+
+function updateSummary(data){
+  const redCount = data.filter(isRedZone).length;
+  document.getElementById('cnt-total').textContent    = data.length;
+  document.getElementById('cnt-pending').textContent  = data.filter(r=>r.status==='Pending').length;
+  document.getElementById('cnt-inprog').textContent   = data.filter(r=>r.status==='In Progress').length;
+  document.getElementById('cnt-resolved').textContent = data.filter(r=>r.status==='Resolved').length;
+  document.getElementById('cnt-rejected').textContent = data.filter(r=>r.status==='Rejected').length;
+  document.getElementById('cnt-redzone').textContent  = redCount;
+  const banner = document.getElementById('redzoneAlert');
+  banner.style.display = redCount > 0 ? 'flex' : 'none';
+  document.getElementById('redzoneCount').textContent = redCount;
+}
+
+function applyFilter(){
+  const type     = document.getElementById('filterType').value;
+  const status   = document.getElementById('filterStatus').value;
+  const priority = document.getElementById('filterPriority').value;
+  const worker   = document.getElementById('filterWorker').value;
+
+  let filtered = allData;
+  if(type)     filtered = filtered.filter(r=>r.type===type);
+  if(status)   filtered = filtered.filter(r=>r.status===status);
+  if(priority==='High')   filtered = filtered.filter(r=>isRedZone(r));
+  if(priority==='Normal') filtered = filtered.filter(r=>!isRedZone(r));
+  if(worker==='assigned')   filtered = filtered.filter(r=>r.assignedWorker);
+  if(worker==='unassigned') filtered = filtered.filter(r=>!r.assignedWorker);
+
+  const high = filtered.filter(r=>isRedZone(r));
+  const hpSec = document.getElementById('highPrioritySection');
+  if(high.length){
+    hpSec.style.display = 'block';
+    document.getElementById('highTable').innerHTML = high.map((r,i)=>`
+      <tr class="redzone-row">
+        <td>${i+1}</td>
+        <td>${r.userName||'—'}</td>
+        <td>${r.type==='waste'?'🚮 Waste':'🚦 Traffic'}</td>
+        <td style="max-width:140px;word-break:break-word;">${r.description||'—'}</td>
+        <td class="time-cell">${r.location||'—'}</td>
+        <td class="time-cell"><b>${fmtTime(r.reportedAt||r.createdAt)}</b></td>
+        <td class="time-cell">${elapsedHtml(r.reportedAt||r.createdAt)}</td>
+        <td>${workerCell(r)}</td>
+        <td>${r.image?`<img class="thumb" src="${r.image}">`:'<span class="no-img">—</span>'}</td>
+        <td>${priorityBadge(r)}</td>
+        <td>${badgeHtml(r.status)}</td>
+      </tr>`).join('');
+  } else {
+    hpSec.style.display = 'none';
+  }
+
+  document.getElementById('adminTable').innerHTML = filtered.length
+    ? filtered.map((r,i)=>`
+      <tr ${isRedZone(r)?'class="redzone-row"':''}>
+        <td>${i+1}</td>
+        <td>${r.userName||'—'}</td>
+        <td>${r.type==='waste'?'🚮 Waste':'🚦 Traffic'}</td>
+        <td style="max-width:140px;word-break:break-word;">${r.description||'—'}</td>
+        <td class="time-cell">${r.location||'—'}</td>
+        <td class="time-cell"><b>${fmtTime(r.reportedAt||r.createdAt)}</b></td>
+        <td class="time-cell">${
+          r.resolvedAt
+            ? `<b style="color:#5cd68a;">${fmtTime(r.resolvedAt)}</b>`
+            : '<span style="color:var(--muted);">Not resolved</span>'
+        }</td>
+        <td>${workerCell(r)}</td>
+        <td>${r.image?`<img class="thumb" src="${r.image}">`:'<span class="no-img">—</span>'}</td>
+        <td>${priorityBadge(r)}</td>
+        <td>${badgeHtml(r.status)}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="11" class="loading">No reports found.</td></tr>';
+}
+
+function makeIcon(color, rz){
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:${rz?20:14}px;height:${rz?20:14}px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 ${rz?14:8}px ${color};"></div>`,
+    iconSize:[rz?20:14,rz?20:14],iconAnchor:[rz?10:7,rz?10:7]
+  });
+}
+
+function initMap(data){
+  if(map) map.remove();
+  map = L.map('map').setView([17.45,78.39],12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  data.forEach(r=>{
+    if(!r.location||!r.location.includes(',')) return;
+    const [lat,lng]=r.location.split(',');
+    if(isNaN(lat)||isNaN(lng)) return;
+    const rz = isRedZone(r);
+    const color = rz?'#cc2222':'#7dba3f';
+    L.marker([parseFloat(lat),parseFloat(lng)],{icon:makeIcon(color,rz)}).addTo(map)
+      .bindPopup(`
+        <b style="color:${rz?'#ff4444':'#5cd68a'}">${rz?'🔴 RED ZONE — ':''}${(r.type||'').toUpperCase()}</b><br>
+        ${r.description||''}<br>
+        <i>Status: ${r.status||'Pending'}</i><br>
+        ${r.assignedWorker?`<b>👷 Worker: ${r.assignedWorker}</b><br>`:''}
+        <small>${fmtTime(r.reportedAt||r.createdAt)}</small>
+        ${r.resolvedAt?`<br><small style="color:#5cd68a;">Resolved: ${fmtTime(r.resolvedAt)}</small>`:''}
+      `);
+  });
+}
+
+loadReports();
+setInterval(loadReports, 15000);
+</script>
+</body>
+</html>

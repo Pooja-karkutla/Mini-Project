@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Traffic</title>
+
+<style>
+body{font-family:Arial;background:#0f1a0f;color:white;padding:20px;}
+input,textarea,select,button{width:100%;margin:10px 0;padding:10px;}
+button{background:#2e4414;color:white;border:none;}
+</style>
+</head>
+
+<body>
+
+<h2>Traffic Event</h2>
+
+<input id="name" placeholder="Event Name">
+<textarea id="desc" placeholder="Description"></textarea>
+<input id="crowd" placeholder="Expected Crowd">
+<input id="location" placeholder="Location">
+
+<select id="status">
+<option>Pending</option>
+<option>In Progress</option>
+<option>Resolved</option>
+</select>
+
+<button onclick="submitTraffic()">Submit</button>
+
+<script>
+
+function submitTraffic(){
+
+let user=JSON.parse(localStorage.getItem("currentUser"));
+let reports=JSON.parse(localStorage.getItem("reports"))||[];
+
+reports.push({
+    id:"T"+Date.now(),
+    type:"traffic",
+    email:user.email,
+    event_name:name.value,
+    description:desc.value,
+    expected_crowd:crowd.value,
+    location:location.value,
+    event_status:status.value,
+    reported_time:new Date().toLocaleString()
+});
+
+localStorage.setItem("reports",JSON.stringify(reports));
+alert("Submitted");
+}
+
+</script>
+
+</body>
+</html>

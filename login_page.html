@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login / Signup</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#0f1a0f,#1c2a0c,#0f1a0f);
+    color:white;
+}
+
+.container{
+    width:360px;
+    padding:25px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(10px);
+    border-radius:15px;
+    text-align:center;
+}
+
+h2{
+    color:#7dba3f;
+    margin-bottom:10px;
+}
+
+/* INPUT WRAPPER */
+.inputBox{
+    position:relative;
+}
+
+/* FIELDS */
+input,select{
+    width:100%;
+    height:45px;
+    padding:10px;
+    margin:8px 0;
+    border:none;
+    border-radius:6px;
+    font-size:14px;
+}
+
+/* EYE ICON */
+.eye{
+    position:absolute;
+    right:10px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    font-size:14px;
+    color:black;
+}
+
+/* BUTTON */
+button{
+    width:100%;
+    height:45px;
+    background:#2e4414;
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:bold;
+}
+
+button:hover{
+    background:#3f5f1c;
+}
+
+.toggle{
+    margin-top:10px;
+    font-size:13px;
+    color:#a5d6a7;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2 id="title">Login</h2>
+
+<form id="authForm">
+
+<input type="text" id="name" placeholder="Full Name" style="display:none;">
+
+<input type="email" id="email" placeholder="Email" required>
+
+<select id="role" required>
+    <option value="">Select Role</option>
+    <option value="Admin">Admin</option>
+    <option value="Citizen">Citizen</option>
+</select>
+
+<!-- PASSWORD -->
+<div class="inputBox">
+    <input type="password" id="password" placeholder="Password" required>
+    <span class="eye" id="eye1" onclick="togglePassword('password')" style="display:none;">👁</span>
+</div>
+
+<!-- CONFIRM PASSWORD -->
+<div class="inputBox">
+    <input type="password" id="confirmPassword" placeholder="Confirm Password" style="display:none;">
+    <span class="eye" id="eye2" onclick="togglePassword('confirmPassword')" style="display:none;">👁</span>
+</div>
+
+<button type="submit">Submit</button>
+
+</form>
+
+<p class="toggle" onclick="toggleMode()" id="toggleText">
+Don't have an account? Sign Up
+</p>
+
+</div>
+
+<script>
+
+let isSignup = false;
+let users = JSON.parse(localStorage.getItem("users")) || [];
+
+/* TOGGLE LOGIN/SIGNUP */
+function toggleMode(){
+    isSignup = !isSignup;
+
+    document.getElementById("title").innerText = isSignup ? "Sign Up" : "Login";
+
+    document.getElementById("name").style.display = isSignup ? "block" : "none";
+    document.getElementById("confirmPassword").style.display = isSignup ? "block" : "none";
+
+    /* 👁 SHOW ONLY IN SIGNUP */
+    document.getElementById("eye1").style.display = isSignup ? "block" : "none";
+    document.getElementById("eye2").style.display = isSignup ? "block" : "none";
+
+    document.getElementById("toggleText").innerText =
+        isSignup ? "Already have an account? Login" : "Don't have an account? Sign Up";
+}
+
+/* 👁 TOGGLE PASSWORD */
+function togglePassword(id){
+    let field = document.getElementById(id);
+    field.type = field.type === "password" ? "text" : "password";
+}
+
+/* FORM SUBMIT */
+document.getElementById("authForm").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    let name = document.getElementById("name").value.trim();
+    let email = document.getElementById("email").value.trim();
+    let role = document.getElementById("role").value;
+    let password = document.getElementById("password").value;
+    let confirmPassword = document.getElementById("confirmPassword").value;
+
+    /* SIGNUP */
+    if(isSignup){
+
+        if(!name || !email || !role || !password || !confirmPassword){
+            alert("All fields required");
+            return;
+        }
+
+        if(password !== confirmPassword){
+            alert("Passwords do not match");
+            return;
+        }
+
+        let exists = users.find(u => u.email === email);
+        if(exists){
+            alert("User already exists");
+            return;
+        }
+
+        users.push({
+            id:"U"+Date.now(),
+            name,
+            email,
+            role,
+            password
+        });
+
+        localStorage.setItem("users", JSON.stringify(users));
+
+        alert("Signup successful!");
+        toggleMode();
+        return;
+    }
+
+    /* LOGIN */
+    let user = users.find(u =>
+        u.email === email &&
+        u.password === password &&
+        u.role === role
+    );
+
+    if(!user){
+        alert("Invalid login");
+        return;
+    }
+
+    localStorage.setItem("currentUser", JSON.stringify(user));
+
+    if(user.role === "Citizen"){
+        window.location.href = "citizen_dashboard.html";
+    } else {
+        window.location.href = "admin_dashboard.html";
+    }
+
+});
+
+</script>
+
+</body>
+</html>

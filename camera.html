@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Camera</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial;text-align:center;background:#0f1a0f;color:white;padding:20px;}
+h2{color:#7dba3f;margin-bottom:20px;}
+video{width:90%;max-width:480px;border-radius:10px;margin-bottom:20px;}
+button{padding:12px 30px;border:none;border-radius:6px;background:#2e4414;color:white;cursor:pointer;font-size:15px;margin:8px;}
+button:hover{background:#3a5519;}
+canvas{display:none;}
+#status{margin-top:12px;font-size:13px;color:#aaa;}
+</style>
+</head>
+<body>
+
+<h2>Capture Image</h2>
+<video id="video" autoplay playsinline></video>
+<br>
+<button id="captureBtn">Capture Photo</button>
+<canvas id="canvas"></canvas>
+<p id="status"></p>
+
+<script>
+var video  = document.getElementById("video");
+var canvas = document.getElementById("canvas");
+var status = document.getElementById("status");
+
+navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+  .then(function(stream) {
+    video.srcObject = stream;
+    status.textContent = "Camera ready.";
+  })
+  .catch(function(err) {
+    // Fallback to any camera if rear not available
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function(stream) { video.srcObject = stream; status.textContent = "Camera ready."; })
+      .catch(function() { alert("Camera not available: " + err.message); });
+  });
+
+document.getElementById("captureBtn").onclick = function() {
+  if (video.videoWidth === 0) {
+    alert("Wait for the camera to load first!");
+    return;
+  }
+
+  // ── Resize to max 640px wide and compress to JPEG 60% ──────────────────
+  // A full-res PNG from a phone camera can be 3-5MB as base64.
+  // JPEG at 640px wide is roughly 30-60KB — safe for sessionStorage.
+  var MAX_WIDTH = 640;
+  var quality   = 0.6;   // 60% JPEG quality — good enough for evidence photos
+
+  var scale  = Math.min(1, MAX_WIDTH / video.videoWidth);
+  var w      = Math.round(video.videoWidth  * scale);
+  var h      = Math.round(video.videoHeight * scale);
+
+  canvas.width  = w;
+  canvas.height = h;
+
+  var ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, w, h);
+
+  var compressed = canvas.toDataURL("image/jpeg", quality);
+
+  // Approximate size check before saving
+  var approxKB = Math.round((compressed.length * 3) / 4 / 1024);
+  status.textContent = "Image size: ~" + approxKB + " KB. Saving...";
+
+  try {
+    sessionStorage.setItem("capturedImage", compressed);
+  } catch(e) {
+    alert("Image still too large to save (" + approxKB + " KB). Try again.");
+    return;
+  }
+
+  // Stop all camera tracks
+  video.srcObject.getTracks().forEach(function(t) { t.stop(); });
+
+  window.location.href = "citizen_dashboard.html";
+};
+</script>
+
+</body>
+</html>

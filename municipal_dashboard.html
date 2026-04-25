@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Municipal Dashboard – RapidEco</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#63b3ed;--blue-bright:#90cdf4;
+  --bg:#0a0f1a;--card:#0d1a2e;--card2:#0f2040;
+  --border:#1e3a5f;--text:#e2eaf5;--muted:#6b8cad;
+  --accent:#2b6cb0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding:24px;}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.topbar h2{font-family:'Syne',sans-serif;font-size:22px;color:var(--blue);}
+.live-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:20px;background:#0a1a2e;border:1px solid var(--blue);
+  font-size:12px;color:var(--blue-bright);font-weight:600;
+}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--blue-bright);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.summary{display:flex;gap:14px;margin-bottom:24px;flex-wrap:wrap;}
+.box{flex:1;min-width:110px;padding:18px;border-radius:12px;text-align:center;border:1px solid var(--border);}
+.box p{font-size:28px;font-weight:800;font-family:'Syne',sans-serif;}
+.box span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.b-total{background:#0d2035;}
+.b-pending{background:#1a1a00;}
+.b-inprog{background:#0a1f3a;}
+.b-resolved{background:#0a2f1a;}
+.b-rejected{background:#2a0a0a;}
+.b-redzone{background:#2a0000;}
+
+.redzone-banner{
+  display:none;align-items:center;gap:10px;
+  background:#1a0000;border:1px solid #cc2222;
+  border-radius:10px;padding:12px 18px;margin-bottom:20px;
+  color:#ff6666;font-size:13px;font-weight:600;
+}
+
+/* FILTERS */
+.filters-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filters-row select{
+  padding:8px 12px;background:#0a1420;border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;cursor:pointer;
+}
+.filters-row select:focus{border-color:var(--blue);}
+.refresh-btn{
+  padding:8px 16px;background:var(--card);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;
+  transition:border-color .2s;margin-left:auto;
+}
+.refresh-btn:hover{border-color:var(--blue);}
+.last-updated{font-size:11px;color:var(--muted);}
+
+.section-label{
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:.6px;text-transform:uppercase;margin:20px 0 10px;
+}
+.section-label.red{color:#ff5555;}
+.section-label.blue{color:var(--muted);}
+
+/* TABLES */
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:28px;}
+table{width:100%;border-collapse:collapse;min-width:1020px;}
+th,td{border-bottom:1px solid var(--border);padding:10px 12px;text-align:left;font-size:12px;}
+th{background:#0d2035;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;}
+tr.redzone-row{background:rgba(180,0,0,.09)!important;}
+tr.redzone-row:hover{background:rgba(180,0,0,.16)!important;}
+tr:hover{background:rgba(99,179,237,.04);}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;}
+.badge-pending{background:#3a2800;color:#f0a500;}
+.badge-resolved{background:#0a2f1a;color:#5cd68a;}
+.badge-rejected{background:#2a0a0a;color:#ff5555;}
+.badge-in-progress{background:#0a1f3a;color:#63b3ed;}
+.badge-high{background:#3a0000;color:#ff4444;border:1px solid #7a1111;}
+.badge-normal{background:#0d2035;color:var(--muted);}
+
+img.thumb{width:52px;height:38px;object-fit:cover;border-radius:5px;border:1px solid var(--border);}
+.no-img{color:var(--muted);font-size:10px;}
+.time-cell{font-size:10px;color:var(--muted);line-height:1.7;}
+.time-cell b{color:var(--text);}
+
+/* ACTION CONTROLS */
+.action-cell{display:flex;flex-direction:column;gap:6px;min-width:180px;}
+.status-sel{
+  padding:5px 8px;border-radius:6px;border:1px solid var(--border);
+  background:#0a1420;color:var(--text);font-size:12px;cursor:pointer;outline:none;
+  transition:border-color .2s;
+}
+.status-sel:focus{border-color:var(--blue);}
+.worker-input-row{display:flex;gap:5px;}
+.worker-input{
+  flex:1;padding:5px 8px;border-radius:6px;border:1px solid var(--border);
+  background:#0a1420;color:var(--text);font-size:11px;outline:none;
+  transition:border-color .2s;
+  font-family:'DM Sans',sans-serif;
+}
+.worker-input:focus{border-color:var(--blue);}
+.assign-btn{
+  padding:5px 10px;background:linear-gradient(135deg,#2b6cb0,var(--blue));
+  border:none;border-radius:6px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;
+  white-space:nowrap;transition:opacity .2s;
+}
+.assign-btn:hover{opacity:.85;}
+.assigned-worker{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 9px;border-radius:8px;font-size:10px;font-weight:600;
+  background:rgba(99,179,237,.15);color:var(--blue-bright);border:1px solid rgba(99,179,237,.3);
+}
+.change-worker-link{font-size:10px;color:var(--muted);cursor:pointer;text-decoration:underline;margin-left:4px;}
+.change-worker-link:hover{color:var(--text);}
+
+/* MODAL */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:500;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:#0d1a2e;border:1px solid var(--blue);border-radius:16px;
+  padding:28px;width:460px;max-width:95vw;
+  animation:modalIn .25s ease;
+}
+@keyframes modalIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--blue-bright);margin-bottom:4px;}
+.modal .modal-sub{font-size:12px;color:var(--muted);margin-bottom:20px;}
+.modal label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.modal input,.modal select{
+  width:100%;padding:11px 14px;margin-bottom:14px;
+  border:1px solid var(--border);border-radius:10px;
+  background:#0a1420;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+  outline:none;transition:border-color .2s;
+}
+.modal input:focus,.modal select:focus{border-color:var(--blue);}
+.modal-btns{display:flex;gap:10px;margin-top:6px;}
+.modal-confirm{
+  flex:1;padding:12px;background:linear-gradient(135deg,#2b6cb0,var(--blue));
+  border:none;border-radius:9px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;
+  font-family:'Syne',sans-serif;transition:opacity .2s;
+}
+.modal-confirm:hover{opacity:.85;}
+.modal-cancel{
+  padding:12px 20px;background:var(--card);border:1px solid var(--border);
+  border-radius:9px;color:var(--text);font-size:14px;cursor:pointer;transition:border-color .2s;
+}
+.modal-cancel:hover{border-color:var(--blue);}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--card);border:1px solid var(--blue);color:var(--text);
+  padding:12px 24px;border-radius:10px;font-size:14px;font-weight:500;
+  z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  opacity:0;pointer-events:none;box-shadow:0 4px 20px rgba(99,179,237,.2);
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.error{border-color:#ff5555;}
+.toast.success{border-color:#5cd68a;}
+
+/* MAP */
+.map-wrap{position:relative;}
+.map-legend{
+  position:absolute;top:10px;right:10px;z-index:999;
+  background:rgba(10,15,26,.92);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;font-size:11px;pointer-events:none;
+}
+.map-legend div{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+.dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.dot-red{background:#cc2222;}.dot-blue{background:#63b3ed;}.dot-orange{background:#f6ad55;}
+#map{height:420px;border-radius:14px;border:1px solid var(--border);}
+.loading{text-align:center;padding:40px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- ACTION MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Update Complaint</h3>
+    <div class="modal-sub" id="modalSub">—</div>
+    <label>Status</label>
+    <select id="modalStatus">
+      <option value="Pending">Pending</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Resolved">Resolved</option>
+      <option value="Rejected">Rejected</option>
+    </select>
+    <label>Assign Worker (name / ID)</label>
+    <input id="modalWorker" placeholder="e.g. Ravi Kumar, Worker #12…">
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmModal()">✓ Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="topbar">
+  <h2>🏛 Municipal Dashboard</h2>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div class="live-badge"><div class="pulse"></div> Live</div>
+    <span class="last-updated" id="lastUpdated">—</span>
+    <button class="refresh-btn" onclick="loadData()">⟳ Refresh</button>
+  </div>
+</div>
+
+<div class="redzone-banner" id="redzoneAlert">
+  <span>🔴</span>
+  <div><span id="redzoneCount">0</span> waste complaint(s) unresolved &gt;24 hours — <strong>High Priority / Red Zone. Immediate action required.</strong></div>
+</div>
+
+<div class="summary">
+  <div class="box b-total"><p id="cnt-total">—</p><span>Total Waste</span></div>
+  <div class="box b-pending"><p id="cnt-pending">—</p><span>Pending</span></div>
+  <div class="box b-inprog"><p id="cnt-inprog">—</p><span>In Progress</span></div>
+  <div class="box b-resolved"><p id="cnt-resolved">—</p><span>Resolved</span></div>
+  <div class="box b-rejected"><p id="cnt-rejected">—</p><span>Rejected</span></div>
+  <div class="box b-redzone"><p id="cnt-redzone">—</p><span>🔴 Red Zone</span></div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters-row">
+  <select id="filterStatus" onchange="applyFilter()">
+    <option value="">All Statuses</option>
+    <option value="Pending">Pending</option>
+    <option value="In Progress">In Progress</option>
+    <option value="Resolved">Resolved</option>
+    <option value="Rejected">Rejected</option>
+  </select>
+  <select id="filterPriority" onchange="applyFilter()">
+    <option value="">All Priorities</option>
+    <option value="High">🔴 High Priority only</option>
+    <option value="Normal">Normal only</option>
+  </select>
+  <select id="filterWorker" onchange="applyFilter()">
+    <option value="">All Worker Status</option>
+    <option value="assigned">Worker Assigned</option>
+    <option value="unassigned">No Worker Yet</option>
+  </select>
+</div>
+
+<!-- HIGH PRIORITY TABLE -->
+<div id="highPrioritySection" style="display:none;">
+  <div class="section-label red">🔴 High Priority — Unresolved &gt; 24 Hours</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Citizen</th><th>Description</th><th>Location</th>
+          <th>Reported At</th><th>Time Elapsed</th><th>Image</th>
+          <th>Priority</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="highTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ALL WASTE REPORTS TABLE -->
+<div class="section-label blue">All Waste Reports</div>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Citizen</th><th>Description</th><th>Location</th>
+        <th>Reported At</th><th>Resolved At</th><th>Image</th>
+        <th>Priority</th><th>Assigned Worker</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="muniTable"><tr><td colspan="11" class="loading">Loading…</td></tr></tbody>
+  </table>
+</div>
+
+<!-- MAP -->
+<div class="map-wrap">
+  <div class="map-legend">
+    <div><div class="dot dot-red"></div> Red Zone (&gt;24h unresolved)</div>
+    <div><div class="dot dot-orange"></div> In Progress</div>
+    <div><div class="dot dot-blue"></div> Normal / Resolved</div>
+  </div>
+  <div id="map"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://localhost:5000';
+let allData = [];
+let map;
+let modalId = null;
+
+/* UTILS */
+function showToast(msg, type=''){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  void t.offsetWidth;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+function fmtTime(iso){
+  if(!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
+    + ' ' + d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+}
+
+function elapsedHtml(iso){
+  if(!iso) return '—';
+  const ms = Date.now() - new Date(iso).getTime();
+  const h  = Math.floor(ms/3600000);
+  const m  = Math.floor((ms%3600000)/60000);
+  if(h >= 24){
+    const d = Math.floor(h/24);
+    return `<span style="color:#ff5555;font-weight:700;">${d}d ${h%24}h ${m}m ⚠️</span>`;
+  }
+  return `${h}h ${m}m`;
+}
+
+function isRedZone(r){
+  if(r.isRedZone) return true;
+  if(['Pending','In Progress'].includes(r.status) && (r.reportedAt||r.createdAt)){
+    return (Date.now() - new Date(r.reportedAt||r.createdAt).getTime()) >= 24*60*60*1000;
+  }
+  return false;
+}
+
+function badgeHtml(status){
+  const m = {Pending:'badge-pending',Resolved:'badge-resolved',Rejected:'badge-rejected','In Progress':'badge-in-progress'};
+  return `<span class="badge ${m[status]||'badge-pending'}">${status||'Pending'}</span>`;
+}
+
+function priorityBadge(r){
+  return isRedZone(r)
+    ? `<span class="badge badge-high">🔴 High</span>`
+    : `<span class="badge badge-normal">Normal</span>`;
+}
+
+function workerCell(r){
+  if(r.assignedWorker){
+    return `<span class="assigned-worker">👷 ${r.assignedWorker}</span>
+            <span class="change-worker-link" onclick="openModal('${r._id}')">change</span>`;
+  }
+  return `<span style="color:var(--muted);font-size:10px;">Not assigned</span>`;
+}
+
+function actionCell(r){
+  return `<button class="assign-btn" onclick="openModal('${r._id}')" style="width:100%;">
+    ${r.assignedWorker ? '✏️ Edit' : '👷 Assign / Update'}
+  </button>`;
+}
+
+/* MODAL */
+function openModal(id){
+  const r = allData.find(x=>x._id===id);
+  if(!r) return;
+  modalId = id;
+  document.getElementById('modalTitle').textContent = 'Update Complaint';
+  document.getElementById('modalSub').textContent = (r.description||'').slice(0,60) + (r.description?.length>60?'…':'');
+  document.getElementById('modalStatus').value = r.status || 'Pending';
+  document.getElementById('modalWorker').value = r.assignedWorker || '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+  modalId = null;
+}
+
+async function confirmModal(){
+  if(!modalId) return;
+  const newStatus = document.getElementById('modalStatus').value;
+  const newWorker = document.getElementById('modalWorker').value.trim();
+  const patch = { status: newStatus };
+  if(newWorker) patch.assignedWorker = newWorker;
+  if(newStatus === 'Resolved') patch.resolvedAt = new Date().toISOString();
+  if(newStatus !== 'Resolved') patch.resolvedAt = null;
+
+  try{
+    const res = await fetch(`${API}/report/${modalId}`,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(patch)
+    });
+    if(!res.ok) throw new Error();
+
+    const rec = allData.find(r=>r._id===modalId);
+    if(rec){
+      rec.status = newStatus;
+      rec.resolvedAt = patch.resolvedAt || null;
+      if(newWorker) rec.assignedWorker = newWorker;
+      if(newStatus === 'Resolved') rec.isRedZone = false;
+    }
+
+    showToast(`✓ Updated: ${newStatus}${newWorker?' | Worker: '+newWorker:''}`, 'success');
+    closeModal();
+    updateSummary(allData.filter(r=>r.type==='waste'));
+    applyFilter();
+    initMap(allData.filter(r=>r.type==='waste'));
+  } catch(e){
+    showToast('❌ Update failed — check server', 'error');
+  }
+}
+
+/* CLICK OUTSIDE MODAL */
+document.getElementById('modalOverlay').addEventListener('click', function(e){
+  if(e.target === this) closeModal();
+});
+
+/* LOAD */
+async function loadData(){
+  try{
+    const res = await fetch(`${API}/report`);
+    const all = await res.json();
+    allData = all;
+  } catch(e){ allData=[]; }
+
+  const waste = allData.filter(r=>r.type==='waste');
+  updateSummary(waste);
+  applyFilter();
+  initMap(waste);
+  document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString('en-IN');
+}
+
+function updateSummary(waste){
+  const redCount = waste.filter(isRedZone).length;
+  document.getElementById('cnt-total').textContent    = waste.length;
+  document.getElementById('cnt-pending').textContent  = waste.filter(r=>r.status==='Pending').length;
+  document.getElementById('cnt-inprog').textContent   = waste.filter(r=>r.status==='In Progress').length;
+  document.getElementById('cnt-resolved').textContent = waste.filter(r=>r.status==='Resolved').length;
+  document.getElementById('cnt-rejected').textContent = waste.filter(r=>r.status==='Rejected').length;
+  document.getElementById('cnt-redzone').textContent  = redCount;
+  const banner = document.getElementById('redzoneAlert');
+  banner.style.display = redCount > 0 ? 'flex' : 'none';
+  document.getElementById('redzoneCount').textContent = redCount;
+}
+
+function applyFilter(){
+  const status   = document.getElementById('filterStatus').value;
+  const priority = document.getElementById('filterPriority').value;
+  const worker   = document.getElementById('filterWorker').value;
+
+  let filtered = allData.filter(r=>r.type==='waste');
+  if(status)   filtered = filtered.filter(r=>r.status===status);
+  if(priority==='High')   filtered = filtered.filter(r=>isRedZone(r));
+  if(priority==='Normal') filtered = filtered.filter(r=>!isRedZone(r));
+  if(worker==='assigned')   filtered = filtered.filter(r=>r.assignedWorker);
+  if(worker==='unassigned') filtered = filtered.filter(r=>!r.assignedWorker);
+
+  const high = filtered.filter(r=>isRedZone(r));
+  const hpSec = document.getElementById('highPrioritySection');
+  if(high.length){
+    hpSec.style.display = 'block';
+    document.getElementById('highTable').innerHTML = high.map((r,i)=>`
+      <tr class="redzone-row">
+        <td>${i+1}</td>
+        <td>${r.userName||'—'}</td>
+        <td style="max-width:150px;word-break:break-word;">${r.description||'—'}</td>
+        <td class="time-cell">${r.location||'—'}</td>
+        <td class="time-cell"><b>${fmtTime(r.reportedAt||r.createdAt)}</b></td>
+        <td class="time-cell">${elapsedHtml(r.reportedAt||r.createdAt)}</td>
+        <td>${r.image?`<img class="thumb" src="${r.image}">`:'<span class="no-img">—</span>'}</td>
+        <td>${priorityBadge(r)}</td>
+        <td>${badgeHtml(r.status)}</td>
+        <td>${actionCell(r)}</td>
+      </tr>`).join('');
+  } else {
+    hpSec.style.display = 'none';
+  }
+
+  document.getElementById('muniTable').innerHTML = filtered.length
+    ? filtered.map((r,i)=>`
+      <tr ${isRedZone(r)?'class="redzone-row"':''}>
+        <td>${i+1}</td>
+        <td>${r.userName||'—'}</td>
+        <td style="max-width:150px;word-break:break-word;">${r.description||'—'}</td>
+        <td class="time-cell">${r.location||'—'}</td>
+        <td class="time-cell"><b>${fmtTime(r.reportedAt||r.createdAt)}</b></td>
+        <td class="time-cell">${
+          r.resolvedAt
+            ? `<b style="color:#5cd68a;">${fmtTime(r.resolvedAt)}</b>`
+            : '<span style="color:var(--muted);">Not resolved</span>'
+        }</td>
+        <td>${r.image?`<img class="thumb" src="${r.image}">`:'<span class="no-img">—</span>'}</td>
+        <td>${priorityBadge(r)}</td>
+        <td>${workerCell(r)}</td>
+        <td>${badgeHtml(r.status)}</td>
+        <td>${actionCell(r)}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="11" class="loading">No reports found.</td></tr>';
+}
+
+/* MAP */
+function makeIcon(color, size=14, glow=8){
+  return L.divIcon({
+    className:'',
+    html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 ${glow}px ${color};"></div>`,
+    iconSize:[size,size],iconAnchor:[size/2,size/2]
+  });
+}
+
+function initMap(data){
+  if(map) map.remove();
+  map = L.map('map').setView([17.45,78.39],12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+  data.forEach(r=>{
+    if(!r.location||!r.location.includes(',')) return;
+    const [lat,lng] = r.location.split(',');
+    if(isNaN(lat)||isNaN(lng)) return;
+    const rz = isRedZone(r);
+    const inProgress = r.status === 'In Progress';
+    const color = rz ? '#cc2222' : inProgress ? '#f6ad55' : '#63b3ed';
+    const size  = rz ? 20 : 14;
+    const glow  = rz ? 14 : 8;
+    L.marker([parseFloat(lat),parseFloat(lng)],{icon:makeIcon(color,size,glow)}).addTo(map)
+      .bindPopup(`
+        <b style="color:${rz?'#ff4444':'#63b3ed'}">${rz?'🔴 RED ZONE — ':''}WASTE COMPLAINT</b><br>
+        <b>${r.description||''}</b><br>
+        Citizen: ${r.userName||'—'}<br>
+        Status: <b>${r.status||'Pending'}</b><br>
+        ${r.assignedWorker?`Worker: <b>👷 ${r.assignedWorker}</b><br>`:'<i>No worker assigned</i><br>'}
+        <small>Reported: ${fmtTime(r.reportedAt||r.createdAt)}</small>
+        ${r.resolvedAt?`<br><small style="color:#5cd68a;">Resolved: ${fmtTime(r.resolvedAt)}</small>`:''}
+        <br><br><button onclick="openModal('${r._id}')" style="padding:5px 12px;background:#2b6cb0;border:none;border-radius:5px;color:#fff;cursor:pointer;font-size:12px;">👷 Assign / Update</button>
+      `);
+  });
+}
+
+loadData();
+setInterval(loadData, 20000);
+</script>
+</body>
+</html>

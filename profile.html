@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Citizen Profile</title>
+
+<style>
+body{
+    font-family:Arial;
+    background:#0f1a0f;
+    color:white;
+    padding:20px;
+}
+
+/* BACK BUTTON */
+.back-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 16px;
+    margin-bottom:20px;
+    background:#2e4414;
+    border:none;
+    border-radius:8px;
+    color:white;
+    font-size:14px;
+    font-weight:bold;
+    cursor:pointer;
+    text-decoration:none;
+}
+.back-btn:hover{background:#3a5519;}
+
+/* PROFILE CARD */
+.profile-card{
+    background:linear-gradient(135deg,#1c2a0c,#2e4414);
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+}
+
+/* BUTTONS */
+.action-btn{
+    padding:12px 18px;
+    margin:10px 10px 0 0;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    background:#7dba3f;
+    color:black;
+    font-weight:bold;
+    font-size:14px;
+}
+.action-btn:hover{background:#9be15d;}
+
+input{
+    padding:8px;
+    border-radius:5px;
+    border:none;
+    margin-top:8px;
+    width:60%;
+    background:#1b2a1b;
+    color:white;
+}
+
+h2,h3{color:#7dba3f;}
+</style>
+</head>
+
+<body>
+
+<a class="back-btn" onclick="window.location.href='citizen_dashboard.html'">
+← Back to Dashboard
+</a>
+
+<h2>👤 Citizen Profile</h2>
+
+<!-- PROFILE -->
+<div class="profile-card" id="profileInfo"></div>
+
+<!-- BUTTON SECTION -->
+<h3>📂 My Records</h3>
+
+<button class="action-btn" onclick="openWaste()">🚮 Waste Page</button>
+<button class="action-btn" onclick="openTraffic()">🚦 Traffic Page</button>
+
+<script>
+
+/* USER */
+let user = JSON.parse(localStorage.getItem("currentUser")) 
+|| {email:"guest@demo.com", name:"Guest User", role:"Citizen"};
+
+/* SAVE ADDRESS */
+function saveAddress(){
+    let addr = document.getElementById("addrInput").value;
+    user.address = addr;
+    localStorage.setItem("currentUser", JSON.stringify(user));
+    alert("Address saved!");
+    renderProfile();
+}
+
+/* PROFILE UI */
+function renderProfile(){
+
+let addrSection = "";
+
+if(!user.address){
+    addrSection = `
+        <input id="addrInput" placeholder="Enter Address">
+        <button onclick="saveAddress()">Add Address</button>
+    `;
+}else{
+    addrSection = `
+        <h3>📍 Address: ${user.address}</h3>
+        <button onclick="editAddress()">Edit Address</button>
+    `;
+}
+
+document.getElementById("profileInfo").innerHTML = `
+<h3>👤 Name: ${user.name || 'N/A'}</h3>
+<h3>📧 Email: ${user.email}</h3>
+<h3>🎭 Role: ${user.role || 'Citizen'}</h3>
+<h3>🔒 Password: ********</h3>
+${addrSection}
+`;
+}
+
+/* EDIT ADDRESS */
+function editAddress(){
+    document.getElementById("profileInfo").innerHTML += `
+        <input id="addrInput" value="${user.address}">
+        <button onclick="saveAddress()">Save</button>
+    `;
+}
+
+/* NAVIGATION */
+function openWaste(){
+    window.location.href = "waste.html";
+}
+
+function openTraffic(){
+    window.location.href = "traffic.html";
+}
+
+renderProfile();
+
+</script>
+
+</body>
+</html>

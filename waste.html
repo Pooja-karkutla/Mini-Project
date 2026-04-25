@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Waste Reports – RapidEco</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{--green:#7dba3f;--green-bright:#9be15d;--bg:#0f1a0f;--card:#1c2a0c;--border:#2e4414;--text:#e8f5d0;--muted:#8aac60;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);}
+
+.topbar{display:flex;align-items:center;padding:15px 22px;background:#1c2a0c;border-bottom:1px solid var(--border);}
+.back-btn{
+  padding:7px 16px;background:#0f1a0f;border:1px solid var(--border);
+  border-radius:7px;color:var(--text);cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:13px;
+  transition:background .2s;
+}
+.back-btn:hover{background:var(--border);}
+.title{margin-left:14px;font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--green-bright);}
+
+.container{padding:24px;}
+
+.summary{display:flex;gap:14px;margin-bottom:24px;flex-wrap:wrap;}
+.box{flex:1;min-width:100px;padding:16px;border-radius:12px;text-align:center;border:1px solid var(--border);}
+.box p{font-size:26px;font-weight:800;font-family:'Syne',sans-serif;}
+.box span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.b-total{background:#1c2a0c;}
+.b-pending{background:#2a1e00;}
+.b-resolved{background:#0a2f1a;}
+.b-rejected{background:#2a0a0a;}
+.b-redzone{background:#2a0000;}
+
+/* quick add form */
+.form-box{background:var(--card);border:1px solid var(--border);padding:18px;border-radius:14px;margin-bottom:24px;}
+.form-box h3{font-family:'Syne',sans-serif;font-size:14px;color:var(--green-bright);margin-bottom:14px;}
+.row{display:flex;gap:10px;flex-wrap:wrap;}
+.row input{flex:1;min-width:160px;padding:10px 12px;background:#0f1a0f;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;}
+.row input:focus{border-color:var(--green);}
+.row button{padding:10px 20px;background:linear-gradient(135deg,var(--green),var(--green-bright));border:none;border-radius:8px;color:#0f1a0f;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;font-size:13px;}
+
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;min-width:680px;}
+th,td{border-bottom:1px solid var(--border);padding:10px 12px;text-align:left;font-size:12px;}
+th{background:var(--card);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;}
+tr.redzone-row{background:rgba(180,0,0,.09)!important;}
+tr:hover{background:rgba(125,186,63,.03);}
+
+img.thumb{width:52px;height:38px;object-fit:cover;border-radius:5px;border:1px solid var(--border);}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;}
+.badge-pending{background:#3a2800;color:#f0a500;}
+.badge-resolved{background:#0a2f1a;color:#5cd68a;}
+.badge-rejected{background:#2a0a0a;color:#ff5555;}
+.badge-high{background:#3a0000;color:#ff4444;border:1px solid #7a1111;}
+.badge-normal{background:#1c2a0c;color:var(--muted);}
+
+.time-cell{font-size:10px;color:var(--muted);line-height:1.7;}
+.time-cell b{color:var(--text);}
+.loading{text-align:center;padding:40px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" onclick="window.location.href='profile.html'">← Back to Profile</button>
+  <div class="title">🚮 My Waste Reports</div>
+</div>
+
+<div class="container">
+
+  <div class="summary">
+    <div class="box b-total"><p id="cnt-total">—</p><span>Total</span></div>
+    <div class="box b-pending"><p id="cnt-pending">—</p><span>Pending</span></div>
+    <div class="box b-resolved"><p id="cnt-resolved">—</p><span>Resolved</span></div>
+    <div class="box b-rejected"><p id="cnt-rejected">—</p><span>Rejected</span></div>
+    <div class="box b-redzone"><p id="cnt-redzone">—</p><span>🔴 Red Zone</span></div>
+  </div>
+
+  <div class="form-box">
+    <h3>Quick Add Report</h3>
+    <div class="row">
+      <input type="text" id="f-desc" placeholder="Description" required>
+      <input type="text" id="f-loc"  placeholder="Location">
+      <button onclick="quickSubmit()">Submit</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Description</th><th>Location</th>
+          <th>Reported At</th><th>Resolved At</th>
+          <th>Image</th><th>Priority</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="wasteTable"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+
+function fmtTime(iso){
+  if(!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
+    + ' ' + d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+}
+
+function isRedZone(r){
+  if(r.isRedZone) return true;
+  if(['Pending','In Progress'].includes(r.status) && r.reportedAt){
+    return (Date.now() - new Date(r.reportedAt).getTime()) >= 24*60*60*1000;
+  }
+  return false;
+}
+
+function getCurrentUser(){
+  try{ return JSON.parse(localStorage.getItem('currentUser')); } catch(e){ return null; }
+}
+
+async function loadData(){
+  let all=[];
+  try{
+    const res = await fetch('http://localhost:5000/report');
+    all = await res.json();
+  } catch(e){ all=[]; }
+
+  // filter waste only
+  const waste = all.filter(r=>r.type==='waste');
+  const redCount = waste.filter(r=>isRedZone(r)).length;
+
+  document.getElementById('cnt-total').textContent    = waste.length;
+  document.getElementById('cnt-pending').textContent  = waste.filter(r=>r.status==='Pending').length;
+  document.getElementById('cnt-resolved').textContent = waste.filter(r=>r.status==='Resolved').length;
+  document.getElementById('cnt-rejected').textContent = waste.filter(r=>r.status==='Rejected').length;
+  document.getElementById('cnt-redzone').textContent  = redCount;
+
+  if(!waste.length){
+    document.getElementById('wasteTable').innerHTML='<tr><td colspan="8" class="loading">No waste reports yet.</td></tr>';
+    return;
+  }
+
+  document.getElementById('wasteTable').innerHTML = waste.map((w,i)=>`
+    <tr ${isRedZone(w)?'class="redzone-row"':''}>
+      <td>${i+1}</td>
+      <td style="max-width:180px;word-break:break-word;">${w.description||'—'}</td>
+      <td class="time-cell">${w.location||'—'}</td>
+      <td class="time-cell"><b>${fmtTime(w.reportedAt||w.createdAt)}</b></td>
+      <td class="time-cell">${
+        w.resolvedAt
+          ? `<b style="color:#5cd68a;">${fmtTime(w.resolvedAt)}</b>`
+          : '<span style="color:var(--muted);">Not resolved</span>'
+      }</td>
+      <td>${w.image?`<img class="thumb" src="${w.image}">`:'—'}</td>
+      <td>${isRedZone(w)?'<span class="badge badge-high">🔴 High</span>':'<span class="badge badge-normal">Normal</span>'}</td>
+      <td><span class="badge badge-${(w.status||'Pending').toLowerCase()}">${w.status||'Pending'}</span></td>
+    </tr>
+  `).join('');
+}
+
+async function quickSubmit(){
+  const desc = document.getElementById('f-desc').value.trim();
+  const loc  = document.getElementById('f-loc').value.trim();
+  if(!desc){ alert('Please enter a description'); return; }
+
+  const user = getCurrentUser();
+  const payload = {
+    userId:      user?.id || ('U'+Date.now()),
+    userName:    user?.name || 'Guest',
+    type:        'waste',
+    description: desc,
+    location:    loc,
+    status:      'Pending',
+    reportedAt:  new Date().toISOString()
+  };
+
+  try{
+    const res = await fetch('http://localhost:5000/report',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error();
+    document.getElementById('f-desc').value='';
+    document.getElementById('f-loc').value='';
+    loadData();
+  } catch(e){
+    alert('Submission failed — check if server is running');
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
