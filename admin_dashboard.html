@@ -2,363 +2,653 @@
 <html>
 <head>
 <title>Admin Dashboard – RapidEco</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
 <style>
+*{margin:0;padding:0;box-sizing:border-box;}
 :root{--green:#7dba3f;--green-bright:#9be15d;--bg:#0f1a0f;--card:#1c2a0c;--border:#2e4414;--text:#e8f5d0;--muted:#8aac60;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding:24px;}
 
-.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
-.topbar h2{font-family:'Syne',sans-serif;font-size:22px;color:var(--green-bright);}
-.live-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:6px 14px;border-radius:20px;background:#0a2f1a;border:1px solid var(--green);
-  font-size:12px;color:var(--green-bright);font-weight:600;
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;}
+
+/* Top Bar */
+.topbar{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:12px 25px;background:rgba(15,26,15,0.95);backdrop-filter:blur(10px);
+    border-bottom:2px solid var(--green);
 }
-.pulse{width:8px;height:8px;border-radius:50%;background:var(--green-bright);animation:pulse 1.5s infinite;}
+.logo{font-size:24px;font-weight:bold;color:var(--green-bright);}
+.logo span{color:white;}
+.topbar-right{display:flex;gap:15px;align-items:center;}
+.profile-icon{
+    display:flex;align-items:center;gap:8px;
+    background:var(--card);padding:8px 16px;border-radius:25px;
+    border:1px solid var(--border);cursor:pointer;
+    transition:all 0.2s;
+}
+.profile-icon:hover{border-color:var(--green);}
+.profile-icon i{font-size:18px;color:var(--green-bright);}
+.logout-btn{
+    background:#dc3545;border:none;padding:8px 18px;
+    border-radius:25px;color:white;cursor:pointer;font-weight:bold;
+}
+.logout-btn:hover{background:#c82333;}
+
+/* Main Layout - Left Panel Larger */
+.main-container{display:flex;height:100vh;padding-top:60px;}
+.sidebar{
+    width:450px;background:var(--card);border-right:2px solid var(--border);
+    display:flex;flex-direction:column;overflow-y:auto;
+}
+/* Custom Scrollbar */
+.sidebar::-webkit-scrollbar{width:6px;}
+.sidebar::-webkit-scrollbar-track{background:var(--bg);}
+.sidebar::-webkit-scrollbar-thumb{background:var(--green);border-radius:10px;}
+
+/* Navigation Menu */
+.nav-menu{
+    padding:20px;
+    border-bottom:1px solid var(--border);
+}
+.nav-item{
+    display:flex;align-items:center;gap:15px;
+    padding:14px 20px;margin-bottom:8px;
+    background:rgba(0,0,0,0.2);border-radius:12px;
+    cursor:pointer;transition:all 0.3s;
+    border-left:3px solid transparent;
+}
+.nav-item:hover{
+    background:rgba(125,186,63,0.15);
+    transform:translateX(5px);
+}
+.nav-item.active{
+    background:rgba(125,186,63,0.2);
+    border-left-color:var(--green);
+}
+.nav-item i{
+    font-size:22px;width:30px;color:var(--green-bright);
+}
+.nav-item span{
+    font-size:16px;font-weight:600;
+}
+.nav-item .badge{
+    margin-left:auto;
+    background:rgba(0,0,0,0.3);
+    padding:4px 8px;
+    border-radius:20px;
+    font-size:11px;
+    color:var(--green-bright);
+}
+
+/* Content Area inside Sidebar */
+.sidebar-content{
+    flex:1;
+    padding:20px;
+    overflow-y:auto;
+}
+.sidebar-content h3{
+    color:var(--green-bright);
+    margin-bottom:15px;
+    font-size:16px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+/* Stats Grid */
+.stats-grid{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
+    margin-bottom:20px;
+}
+.stat-card{
+    background:rgba(0,0,0,0.3);border:1px solid var(--border);
+    border-radius:12px;padding:15px;text-align:center;
+    transition:all 0.2s;cursor:pointer;
+}
+.stat-card:hover{border-color:var(--green);transform:translateY(-2px);}
+.stat-card .stat-number{font-size:28px;font-weight:800;font-family:'Syne',sans-serif;color:var(--green-bright);}
+.stat-card .stat-label{font-size:11px;color:var(--muted);margin-top:5px;}
+.stat-card i{font-size:24px;margin-bottom:8px;display:block;color:var(--green-bright);}
+
+/* Filter Bar */
+.filter-bar{
+    display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;
+}
+.filter-btn{
+    padding:8px 16px;background:#131f0e;border:1px solid var(--border);
+    border-radius:25px;font-size:12px;cursor:pointer;color:var(--muted);
+    transition:all 0.2s;
+}
+.filter-btn:hover{border-color:var(--green);color:var(--text);}
+.filter-btn.active{
+    background:var(--green);color:#0f1a0f;border-color:var(--green);
+}
+
+/* Report List */
+.report-list{
+    display:flex;flex-direction:column;gap:12px;
+    max-height:500px;overflow-y:auto;
+    padding-right:5px;
+}
+.report-list::-webkit-scrollbar{width:4px;}
+.report-list::-webkit-scrollbar-track{background:var(--bg);}
+.report-list::-webkit-scrollbar-thumb{background:var(--green);border-radius:10px;}
+
+.report-item{
+    background:rgba(0,0,0,0.3);border:1px solid var(--border);
+    border-radius:12px;padding:14px;cursor:pointer;
+    transition:all 0.2s;
+}
+.report-item:hover{border-color:var(--green);transform:translateX(3px);}
+.report-item.redzone{border-left:4px solid #ff4444;}
+.report-header{
+    display:flex;justify-content:space-between;align-items:center;
+    margin-bottom:10px;flex-wrap:wrap;gap:5px;
+}
+.report-type{
+    font-size:11px;font-weight:bold;padding:4px 10px;border-radius:20px;
+}
+.type-waste{background:#7dba3f20;color:#7dba3f;}
+.type-traffic{background:#f6ad5520;color:#f6ad55;}
+.report-status{
+    font-size:10px;padding:3px 10px;border-radius:20px;
+}
+.status-pending{background:#f0a50020;color:#f0a500;}
+.status-progress{background:#63b3ed20;color:#63b3ed;}
+.status-resolved{background:#5cd68a20;color:#5cd68a;}
+.status-rejected{background:#ff555520;color:#ff5555;}
+.report-desc{font-size:13px;margin-bottom:8px;font-weight:500;}
+.report-meta{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;}
+.badge-redzone{background:#ff444420;color:#ff4444;padding:2px 8px;border-radius:12px;font-size:9px;margin-left:8px;}
+
+/* Right Panel - Map Area */
+.content-area{flex:1;padding:15px;display:flex;flex-direction:column;gap:15px;}
+.map-container{
+    background:var(--card);border-radius:16px;overflow:hidden;
+    border:1px solid var(--border);height:100%;
+    display:flex;flex-direction:column;
+}
+.map-header{
+    padding:12px 20px;background:rgba(0,0,0,0.3);border-bottom:1px solid var(--border);
+    display:flex;justify-content:space-between;align-items:center;
+}
+.map-header h3{font-size:16px;color:var(--green-bright);}
+.live-badge{font-size:12px;color:var(--muted);}
+.live-badge i{color:#ff4444;font-size:8px;margin-right:4px;animation:pulse 1s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+#mainMap{flex:1;width:100%;min-height:0;}
 
-.summary{display:flex;gap:14px;margin-bottom:24px;flex-wrap:wrap;}
-.box{flex:1;min-width:110px;padding:18px;border-radius:12px;text-align:center;border:1px solid var(--border);}
-.box p{font-size:28px;font-weight:800;font-family:'Syne',sans-serif;}
-.box span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
-.total{background:#1c2a0c;}.b-pending{background:#2a1e00;}
-.b-resolved{background:#0a2f1a;}.b-rejected{background:#2a0a0a;}
-.b-inprog{background:#0a1f3a;}.b-redzone{background:#2a0000;}
-
-.redzone-banner{
-  display:none;align-items:center;gap:10px;
-  background:#1a0000;border:1px solid #cc2222;
-  border-radius:10px;padding:12px 18px;margin-bottom:20px;
-  color:#ff6666;font-size:13px;font-weight:600;
-}
-
-.filters{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
-.filters select{
-  padding:8px 12px;background:#131f0e;border:1px solid var(--border);
-  border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;
-  cursor:pointer;
-}
-.filters select:focus{border-color:var(--green);}
-.refresh-btn{
-  padding:8px 16px;background:var(--card);border:1px solid var(--border);
-  border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;
-  transition:border-color .2s;
-}
-.refresh-btn:hover{border-color:var(--green);}
-
-.section-label{
-  font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
-  letter-spacing:.6px;text-transform:uppercase;margin:20px 0 10px;
-}
-.section-label.red{color:#ff5555;}
-.section-label.normal{color:var(--muted);}
-
-.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:28px;}
-table{width:100%;border-collapse:collapse;min-width:960px;}
-th,td{border-bottom:1px solid var(--border);padding:10px 12px;text-align:left;font-size:12px;}
-th{background:#1c2a0c;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;}
-tr.redzone-row{background:rgba(180,0,0,.09)!important;}
-tr.redzone-row:hover{background:rgba(180,0,0,.16)!important;}
-tr:hover{background:rgba(125,186,63,.04);}
-
-.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;}
-.badge-pending{background:#3a2800;color:#f0a500;}
-.badge-resolved{background:#0a2f1a;color:#5cd68a;}
-.badge-rejected{background:#2a0a0a;color:#ff5555;}
-.badge-in-progress{background:#0a1f3a;color:#63b3ed;}
-.badge-high{background:#3a0000;color:#ff4444;border:1px solid #7a1111;}
-.badge-normal{background:#1c2a0c;color:var(--muted);}
-
-img.thumb{width:52px;height:38px;object-fit:cover;border-radius:5px;border:1px solid var(--border);}
-.no-img{color:var(--muted);font-size:10px;}
-.worker-pill{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;
-  background:rgba(125,186,63,.15);color:var(--green-bright);border:1px solid rgba(125,186,63,.3);
-}
-.no-worker-pill{font-size:10px;color:var(--muted);}
-
-.read-only-note{
-  display:inline-block;padding:4px 10px;border-radius:8px;
-  background:#1c2a0c;border:1px solid var(--border);
-  font-size:10px;color:var(--muted);font-style:italic;
-}
-
-.time-cell{font-size:10px;color:var(--muted);line-height:1.7;}
-.time-cell b{color:var(--text);}
-
-.map-wrap{position:relative;}
+/* Map Legend */
 .map-legend{
-  position:absolute;top:10px;right:10px;z-index:999;
-  background:rgba(15,26,15,.92);border:1px solid var(--border);
-  border-radius:8px;padding:10px 14px;font-size:11px;pointer-events:none;
+    position:absolute;bottom:20px;right:20px;z-index:999;
+    background:rgba(15,26,15,.95);border:1px solid var(--border);
+    border-radius:12px;padding:12px 16px;font-size:12px;
+    backdrop-filter:blur(5px);
 }
-.map-legend div{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
-.dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
-.dot-red{background:#cc2222;}.dot-green{background:#7dba3f;}
-#map{height:400px;border-radius:14px;border:1px solid var(--border);}
-.loading{text-align:center;padding:40px;color:var(--muted);}
+.map-legend div{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.legend-marker{
+    width:28px;height:28px;border-radius:50%;display:flex;
+    align-items:center;justify-content:center;font-weight:bold;font-size:12px;
+}
+.legend-traffic{background:#ff8800;color:white;}
+.legend-waste{background:#7dba3f;color:white;}
+.legend-redzone{background:#ff0000;color:white;}
 
-.last-updated{font-size:11px;color:var(--muted);margin-left:auto;}
+/* Toast */
+.toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:#28a745;color:white;padding:12px 24px;
+    border-radius:8px;z-index:1000;display:none;font-size:14px;
+}
+.empty-state{
+    text-align:center;padding:40px;color:var(--muted);
+}
+.empty-state i{font-size:48px;margin-bottom:15px;opacity:0.5;}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <h2>🛡 Admin Dashboard</h2>
-  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-    <div class="live-badge"><div class="pulse"></div> Live — Auto-refreshing</div>
-    <span class="last-updated" id="lastUpdated">—</span>
-    <button class="refresh-btn" onclick="loadReports()">⟳ Refresh Now</button>
-  </div>
+    <div class="logo">🌱 Rapid<span>Eco</span> <span style="font-size:12px;color:var(--muted);">| Admin Console</span></div>
+    <div class="topbar-right">
+        <div class="profile-icon">
+            <i class="fas fa-user-shield"></i>
+            <span id="adminName">Admin</span>
+        </div>
+        <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
 </div>
 
-<div class="redzone-banner" id="redzoneAlert">
-  <span>🔴</span>
-  <div>
-    <span id="redzoneCount">0</span> complaint(s) unresolved for over 24 hours —
-    <strong>Red Zone / High Priority</strong>. Municipal team has been flagged.
-  </div>
+<div class="main-container">
+    <!-- LEFT PANEL - LARGER SIZE (450px) -->
+    <div class="sidebar">
+        <!-- Navigation Menu -->
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="switchSection('overview')">
+                <i class="fas fa-chart-line"></i>
+                <span>Overview Dashboard</span>
+                <div class="badge" id="totalBadge">0</div>
+            </div>
+            <div class="nav-item" onclick="switchSection('waste')">
+                <i class="fas fa-trash-alt"></i>
+                <span>Waste Reports</span>
+                <div class="badge" id="wasteBadge">0</div>
+            </div>
+            <div class="nav-item" onclick="switchSection('traffic')">
+                <i class="fas fa-traffic-light"></i>
+                <span>Traffic Reports</span>
+                <div class="badge" id="trafficBadge">0</div>
+            </div>
+        </div>
+
+        <!-- Dynamic Content Area -->
+        <div class="sidebar-content" id="sidebarContent">
+            <!-- Overview Content loads here -->
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL - MAP -->
+    <div class="content-area">
+        <div class="map-container">
+            <div class="map-header">
+                <h3><i class="fas fa-map-marked-alt"></i> Live Complaints Map</h3>
+                <div class="live-badge"><i class="fas fa-circle"></i> Auto-refreshing | <span id="lastUpdate">Just now</span></div>
+            </div>
+            <div id="mainMap"></div>
+            <div class="map-legend">
+                <div><div class="legend-marker legend-traffic">T</div> <span>Traffic Event</span></div>
+                <div><div class="legend-marker legend-waste">W</div> <span>Waste Report</span></div>
+                <div><div class="legend-marker legend-redzone">!</div> <span>High Priority (24h+)</span></div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="summary">
-  <div class="box total"><p id="cnt-total">—</p><span>Total</span></div>
-  <div class="box b-pending"><p id="cnt-pending">—</p><span>Pending</span></div>
-  <div class="box b-inprog"><p id="cnt-inprog">—</p><span>In Progress</span></div>
-  <div class="box b-resolved"><p id="cnt-resolved">—</p><span>Resolved</span></div>
-  <div class="box b-rejected"><p id="cnt-rejected">—</p><span>Rejected</span></div>
-  <div class="box b-redzone"><p id="cnt-redzone">—</p><span>🔴 Red Zone</span></div>
-</div>
-
-<div class="filters">
-  <select id="filterType" onchange="applyFilter()">
-    <option value="">All Types</option>
-    <option value="waste">🚮 Waste</option>
-    <option value="traffic">🚦 Traffic</option>
-  </select>
-  <select id="filterStatus" onchange="applyFilter()">
-    <option value="">All Statuses</option>
-    <option value="Pending">Pending</option>
-    <option value="In Progress">In Progress</option>
-    <option value="Resolved">Resolved</option>
-    <option value="Rejected">Rejected</option>
-  </select>
-  <select id="filterPriority" onchange="applyFilter()">
-    <option value="">All Priorities</option>
-    <option value="High">🔴 High Priority only</option>
-    <option value="Normal">Normal only</option>
-  </select>
-  <select id="filterWorker" onchange="applyFilter()">
-    <option value="">All Worker Status</option>
-    <option value="assigned">Worker Assigned</option>
-    <option value="unassigned">No Worker Yet</option>
-  </select>
-</div>
-
-<!-- HIGH PRIORITY TABLE -->
-<div id="highPrioritySection" style="display:none;">
-  <div class="section-label red">🔴 High Priority / Red Zone — Unresolved &gt; 24 Hours</div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th><th>User</th><th>Type</th><th>Description</th><th>Location</th>
-          <th>Reported At</th><th>Time Elapsed</th><th>Worker Assigned</th>
-          <th>Image</th><th>Priority</th><th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="highTable"></tbody>
-    </table>
-  </div>
-</div>
-
-<!-- ALL REPORTS TABLE -->
-<div class="section-label normal">All Reports <span class="read-only-note">View-only — Status is updated by Municipal</span></div>
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>#</th><th>User</th><th>Type</th><th>Description</th><th>Location</th>
-        <th>Reported At</th><th>Resolved At</th><th>Worker Assigned</th>
-        <th>Image</th><th>Priority</th><th>Status</th>
-      </tr>
-    </thead>
-    <tbody id="adminTable"><tr><td colspan="11" class="loading">Loading…</td></tr></tbody>
-  </table>
-</div>
-
-<div class="map-wrap">
-  <div class="map-legend">
-    <div><div class="dot dot-red"></div> Red Zone (&gt;24h unresolved)</div>
-    <div><div class="dot dot-green"></div> Normal complaint</div>
-  </div>
-  <div id="map"></div>
-</div>
+<div id="toast" class="toast"></div>
 
 <script>
 const API = 'http://localhost:5000';
-let allData = [];
-let map;
+let mainMap;
+let allReports = [];
+let markers = [];
+let currentSection = 'overview';
+let currentWasteFilter = 'all';
+let currentTrafficFilter = 'all';
 
-function fmtTime(iso){
-  if(!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})
-    + ' ' + d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+// Authentication
+const user = JSON.parse(localStorage.getItem('currentUser'));
+if (!user || (user.role !== 'Admin' && user.role !== 'Municipal')) {
+    window.location.href = 'login_page.html';
+}
+document.getElementById('adminName').innerHTML = `<i class="fas fa-user-shield"></i> ${user.name.split(' ')[0] || 'Admin'}`;
+
+function showToast(msg, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.background = isError ? '#dc3545' : '#28a745';
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 3000);
 }
 
-function elapsedHtml(iso){
-  if(!iso) return '—';
-  const ms = Date.now() - new Date(iso).getTime();
-  const h  = Math.floor(ms/3600000);
-  const m  = Math.floor((ms%3600000)/60000);
-  if(h >= 24){
-    const d = Math.floor(h/24);
-    return `<span style="color:#ff5555;font-weight:700;">${d}d ${h%24}h ${m}m ⚠️</span>`;
-  }
-  return `${h}h ${m}m`;
+function logout() {
+    localStorage.removeItem('currentUser');
+    window.location.href = 'login_page.html';
 }
 
-function isRedZone(r){
-  if(r.isRedZone) return true;
-  if(['Pending','In Progress'].includes(r.status) && (r.reportedAt||r.createdAt)){
-    return (Date.now() - new Date(r.reportedAt||r.createdAt).getTime()) >= 24*60*60*1000;
-  }
-  return false;
+function isRedZone(report) {
+    if (report.status === 'Resolved' || report.status === 'Rejected') return false;
+    const reportDate = new Date(report.createdAt || report.reportedAt);
+    const hoursDiff = (Date.now() - reportDate.getTime()) / (1000 * 60 * 60);
+    return hoursDiff >= 24;
 }
 
-function badgeHtml(status){
-  const m = {Pending:'badge-pending',Resolved:'badge-resolved',Rejected:'badge-rejected','In Progress':'badge-in-progress'};
-  return `<span class="badge ${m[status]||'badge-pending'}">${status||'Pending'}</span>`;
+async function loadReports() {
+    try {
+        const res = await fetch(`${API}/report`);
+        allReports = await res.json();
+        
+        // Update badges
+        const wasteCount = allReports.filter(r => r.type === 'waste').length;
+        const trafficCount = allReports.filter(r => r.type === 'traffic').length;
+        document.getElementById('totalBadge').innerText = allReports.length;
+        document.getElementById('wasteBadge').innerText = wasteCount;
+        document.getElementById('trafficBadge').innerText = trafficCount;
+        
+        updateMap();
+        document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString();
+        
+        // Reload current section
+        if (currentSection === 'overview') loadOverviewContent();
+        else if (currentSection === 'waste') loadWasteContent();
+        else if (currentSection === 'traffic') loadTrafficContent();
+    } catch(e) {
+        console.error('Error loading reports:', e);
+        showToast('Error loading data', true);
+    }
 }
 
-function priorityBadge(r){
-  return isRedZone(r)
-    ? `<span class="badge badge-high">🔴 High</span>`
-    : `<span class="badge badge-normal">Normal</span>`;
+function switchSection(section) {
+    currentSection = section;
+    
+    // Update nav active state
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    if (section === 'overview') document.querySelector('.nav-item:nth-child(1)').classList.add('active');
+    else if (section === 'waste') document.querySelector('.nav-item:nth-child(2)').classList.add('active');
+    else if (section === 'traffic') document.querySelector('.nav-item:nth-child(3)').classList.add('active');
+    
+    // Load content
+    if (section === 'overview') loadOverviewContent();
+    else if (section === 'waste') loadWasteContent();
+    else if (section === 'traffic') loadTrafficContent();
 }
 
-function workerCell(r){
-  return r.assignedWorker
-    ? `<span class="worker-pill">👷 ${r.assignedWorker}</span>`
-    : `<span class="no-worker-pill">Not assigned</span>`;
+function loadOverviewContent() {
+    const container = document.getElementById('sidebarContent');
+    const total = allReports.length;
+    const pending = allReports.filter(r => r.status === 'Pending').length;
+    const inProgress = allReports.filter(r => r.status === 'In Progress').length;
+    const resolved = allReports.filter(r => r.status === 'Resolved').length;
+    const rejected = allReports.filter(r => r.status === 'Rejected').length;
+    const redzone = allReports.filter(r => isRedZone(r) && r.status !== 'Resolved' && r.status !== 'Rejected').length;
+    
+    container.innerHTML = `
+        <h3><i class="fas fa-chart-simple"></i> Dashboard Overview</h3>
+        
+        <div class="stats-grid">
+            <div class="stat-card" onclick="showToast('Total reports: ${total}')">
+                <i class="fas fa-list"></i>
+                <div class="stat-number">${total}</div>
+                <div class="stat-label">Total Reports</div>
+            </div>
+            <div class="stat-card" onclick="showToast('Pending: ${pending}')">
+                <i class="fas fa-hourglass-half"></i>
+                <div class="stat-number">${pending}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card" onclick="showToast('In Progress: ${inProgress}')">
+                <i class="fas fa-spinner"></i>
+                <div class="stat-number">${inProgress}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-card" onclick="showToast('Resolved: ${resolved}')">
+                <i class="fas fa-check-circle"></i>
+                <div class="stat-number">${resolved}</div>
+                <div class="stat-label">Resolved</div>
+            </div>
+            <div class="stat-card" onclick="showToast('Rejected: ${rejected}')">
+                <i class="fas fa-times-circle"></i>
+                <div class="stat-number">${rejected}</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+            <div class="stat-card" onclick="showToast('Red Zone: ${redzone} complaints >24h')">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="stat-number">${redzone}</div>
+                <div class="stat-label">Red Zone (24h+)</div>
+            </div>
+        </div>
+        
+        <div style="margin:15px 0 10px;">
+            <span style="font-size:13px;color:var(--green-bright);"><i class="fas fa-clock"></i> Recent Reports</span>
+        </div>
+        <div id="overviewReportsList" class="report-list"></div>
+    `;
+    
+    // Load recent reports (last 10)
+    const recentReports = [...allReports].reverse().slice(0, 10);
+    const reportsContainer = document.getElementById('overviewReportsList');
+    
+    if (recentReports.length === 0) {
+        reportsContainer.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><br>No reports yet</div>';
+    } else {
+        reportsContainer.innerHTML = recentReports.map(report => {
+            const rz = isRedZone(report);
+            const statusClass = (report.status || 'pending').toLowerCase().replace(' ', '-');
+            return `
+                <div class="report-item ${rz ? 'redzone' : ''}" onclick="zoomToReport('${report.location}')">
+                    <div class="report-header">
+                        <span class="report-type ${report.type === 'waste' ? 'type-waste' : 'type-traffic'}">
+                            ${report.type === 'waste' ? '🗑️ Waste' : '🚦 Traffic'}
+                        </span>
+                        <div>
+                            <span class="report-status status-${statusClass}">${report.status || 'Pending'}</span>
+                            ${rz ? '<span class="badge-redzone">🔴 24h+</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="report-desc">${(report.description || report.eventName || '-').substring(0, 80)}</div>
+                    <div class="report-meta">
+                        <span><i class="fas fa-user"></i> ${report.userName || 'Unknown'}</span>
+                        <span><i class="far fa-clock"></i> ${new Date(report.createdAt || report.reportedAt).toLocaleString()}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
 }
 
-async function loadReports(){
-  try{
-    const res = await fetch(`${API}/report`);
-    allData = await res.json();
-  } catch(e){ allData=[]; }
-  updateSummary(allData);
-  applyFilter();
-  initMap(allData);
-  document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString('en-IN');
+function loadWasteContent() {
+    const container = document.getElementById('sidebarContent');
+    let wasteReports = allReports.filter(r => r.type === 'waste');
+    
+    container.innerHTML = `
+        <h3><i class="fas fa-trash-alt"></i> Waste Management Reports</h3>
+        
+        <div class="stats-grid">
+            <div class="stat-card" onclick="filterWasteReports('all')">
+                <i class="fas fa-list"></i>
+                <div class="stat-number">${wasteReports.length}</div>
+                <div class="stat-label">Total Waste</div>
+            </div>
+            <div class="stat-card" onclick="filterWasteReports('pending')">
+                <i class="fas fa-hourglass-half"></i>
+                <div class="stat-number">${wasteReports.filter(r => r.status === 'Pending').length}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card" onclick="filterWasteReports('progress')">
+                <i class="fas fa-spinner"></i>
+                <div class="stat-number">${wasteReports.filter(r => r.status === 'In Progress').length}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-card" onclick="filterWasteReports('resolved')">
+                <i class="fas fa-check-circle"></i>
+                <div class="stat-number">${wasteReports.filter(r => r.status === 'Resolved').length}</div>
+                <div class="stat-label">Resolved</div>
+            </div>
+        </div>
+        
+        <div class="filter-bar">
+            <button class="filter-btn ${currentWasteFilter === 'all' ? 'active' : ''}" onclick="filterWasteReports('all')">All Waste</button>
+            <button class="filter-btn ${currentWasteFilter === 'pending' ? 'active' : ''}" onclick="filterWasteReports('pending')">Pending</button>
+            <button class="filter-btn ${currentWasteFilter === 'progress' ? 'active' : ''}" onclick="filterWasteReports('progress')">In Progress</button>
+            <button class="filter-btn ${currentWasteFilter === 'resolved' ? 'active' : ''}" onclick="filterWasteReports('resolved')">Resolved</button>
+        </div>
+        
+        <div id="wasteReportsList" class="report-list"></div>
+    `;
+    
+    filterWasteReports(currentWasteFilter);
 }
 
-function updateSummary(data){
-  const redCount = data.filter(isRedZone).length;
-  document.getElementById('cnt-total').textContent    = data.length;
-  document.getElementById('cnt-pending').textContent  = data.filter(r=>r.status==='Pending').length;
-  document.getElementById('cnt-inprog').textContent   = data.filter(r=>r.status==='In Progress').length;
-  document.getElementById('cnt-resolved').textContent = data.filter(r=>r.status==='Resolved').length;
-  document.getElementById('cnt-rejected').textContent = data.filter(r=>r.status==='Rejected').length;
-  document.getElementById('cnt-redzone').textContent  = redCount;
-  const banner = document.getElementById('redzoneAlert');
-  banner.style.display = redCount > 0 ? 'flex' : 'none';
-  document.getElementById('redzoneCount').textContent = redCount;
+function filterWasteReports(filter) {
+    currentWasteFilter = filter;
+    let filtered = allReports.filter(r => r.type === 'waste');
+    
+    if (filter === 'pending') filtered = filtered.filter(r => r.status === 'Pending');
+    else if (filter === 'progress') filtered = filtered.filter(r => r.status === 'In Progress');
+    else if (filter === 'resolved') filtered = filtered.filter(r => r.status === 'Resolved');
+    
+    const container = document.getElementById('wasteReportsList');
+    if (!container) return;
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-trash-alt"></i><br>No waste reports found</div>';
+        return;
+    }
+    
+    container.innerHTML = filtered.map(report => {
+        const rz = isRedZone(report);
+        return `
+            <div class="report-item ${rz ? 'redzone' : ''}" onclick="zoomToReport('${report.location}')">
+                <div class="report-header">
+                    <span class="report-type type-waste">🗑️ Waste</span>
+                    <span class="report-status status-${(report.status || 'pending').toLowerCase().replace(' ', '-')}">
+                        ${report.status || 'Pending'}
+                    </span>
+                </div>
+                <div class="report-desc">${(report.description || '-').substring(0, 80)}</div>
+                <div class="report-meta">
+                    <span><i class="fas fa-user"></i> ${report.userName || 'Unknown'}</span>
+                    <span><i class="far fa-calendar"></i> ${new Date(report.createdAt || report.reportedAt).toLocaleDateString()}</span>
+                </div>
+                ${report.assignedWorker ? `<div class="report-meta" style="margin-top:5px;"><i class="fas fa-user-hard-hat"></i> Worker: ${report.assignedWorker}</div>` : ''}
+            </div>
+        `;
+    }).join('');
 }
 
-function applyFilter(){
-  const type     = document.getElementById('filterType').value;
-  const status   = document.getElementById('filterStatus').value;
-  const priority = document.getElementById('filterPriority').value;
-  const worker   = document.getElementById('filterWorker').value;
-
-  let filtered = allData;
-  if(type)     filtered = filtered.filter(r=>r.type===type);
-  if(status)   filtered = filtered.filter(r=>r.status===status);
-  if(priority==='High')   filtered = filtered.filter(r=>isRedZone(r));
-  if(priority==='Normal') filtered = filtered.filter(r=>!isRedZone(r));
-  if(worker==='assigned')   filtered = filtered.filter(r=>r.assignedWorker);
-  if(worker==='unassigned') filtered = filtered.filter(r=>!r.assignedWorker);
-
-  const high = filtered.filter(r=>isRedZone(r));
-  const hpSec = document.getElementById('highPrioritySection');
-  if(high.length){
-    hpSec.style.display = 'block';
-    document.getElementById('highTable').innerHTML = high.map((r,i)=>`
-      <tr class="redzone-row">
-        <td>${i+1}</td>
-        <td>${r.userName||'—'}</td>
-        <td>${r.type==='waste'?'🚮 Waste':'🚦 Traffic'}</td>
-        <td style="max-width:140px;word-break:break-word;">${r.description||'—'}</td>
-        <td class="time-cell">${r.location||'—'}</td>
-        <td class="time-cell"><b>${fmtTime(r.reportedAt||r.createdAt)}</b></td>
-        <td class="time-cell">${elapsedHtml(r.reportedAt||r.createdAt)}</td>
-        <td>${workerCell(r)}</td>
-        <td>${r.image?`<img class="thumb" src="${r.image}">`:'<span class="no-img">—</span>'}</td>
-        <td>${priorityBadge(r)}</td>
-        <td>${badgeHtml(r.status)}</td>
-      </tr>`).join('');
-  } else {
-    hpSec.style.display = 'none';
-  }
-
-  document.getElementById('adminTable').innerHTML = filtered.length
-    ? filtered.map((r,i)=>`
-      <tr ${isRedZone(r)?'class="redzone-row"':''}>
-        <td>${i+1}</td>
-        <td>${r.userName||'—'}</td>
-        <td>${r.type==='waste'?'🚮 Waste':'🚦 Traffic'}</td>
-        <td style="max-width:140px;word-break:break-word;">${r.description||'—'}</td>
-        <td class="time-cell">${r.location||'—'}</td>
-        <td class="time-cell"><b>${fmtTime(r.reportedAt||r.createdAt)}</b></td>
-        <td class="time-cell">${
-          r.resolvedAt
-            ? `<b style="color:#5cd68a;">${fmtTime(r.resolvedAt)}</b>`
-            : '<span style="color:var(--muted);">Not resolved</span>'
-        }</td>
-        <td>${workerCell(r)}</td>
-        <td>${r.image?`<img class="thumb" src="${r.image}">`:'<span class="no-img">—</span>'}</td>
-        <td>${priorityBadge(r)}</td>
-        <td>${badgeHtml(r.status)}</td>
-      </tr>`).join('')
-    : '<tr><td colspan="11" class="loading">No reports found.</td></tr>';
+function loadTrafficContent() {
+    const container = document.getElementById('sidebarContent');
+    let trafficReports = allReports.filter(r => r.type === 'traffic');
+    
+    container.innerHTML = `
+        <h3><i class="fas fa-traffic-light"></i> Traffic Management Reports</h3>
+        
+        <div class="stats-grid">
+            <div class="stat-card" onclick="filterTrafficReports('all')">
+                <i class="fas fa-list"></i>
+                <div class="stat-number">${trafficReports.length}</div>
+                <div class="stat-label">Total Traffic</div>
+            </div>
+            <div class="stat-card" onclick="filterTrafficReports('pending')">
+                <i class="fas fa-hourglass-half"></i>
+                <div class="stat-number">${trafficReports.filter(r => r.status === 'Pending').length}</div>
+                <div class="stat-label">Pending</div>
+            </div>
+            <div class="stat-card" onclick="filterTrafficReports('progress')">
+                <i class="fas fa-spinner"></i>
+                <div class="stat-number">${trafficReports.filter(r => r.status === 'In Progress').length}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="stat-card" onclick="filterTrafficReports('resolved')">
+                <i class="fas fa-check-circle"></i>
+                <div class="stat-number">${trafficReports.filter(r => r.status === 'Resolved').length}</div>
+                <div class="stat-label">Resolved</div>
+            </div>
+        </div>
+        
+        <div class="filter-bar">
+            <button class="filter-btn ${currentTrafficFilter === 'all' ? 'active' : ''}" onclick="filterTrafficReports('all')">All Traffic</button>
+            <button class="filter-btn ${currentTrafficFilter === 'pending' ? 'active' : ''}" onclick="filterTrafficReports('pending')">Pending</button>
+            <button class="filter-btn ${currentTrafficFilter === 'progress' ? 'active' : ''}" onclick="filterTrafficReports('progress')">In Progress</button>
+            <button class="filter-btn ${currentTrafficFilter === 'resolved' ? 'active' : ''}" onclick="filterTrafficReports('resolved')">Resolved</button>
+        </div>
+        
+        <div id="trafficReportsList" class="report-list"></div>
+    `;
+    
+    filterTrafficReports(currentTrafficFilter);
 }
 
-function makeIcon(color, rz){
-  return L.divIcon({
-    className:'',
-    html:`<div style="width:${rz?20:14}px;height:${rz?20:14}px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 0 ${rz?14:8}px ${color};"></div>`,
-    iconSize:[rz?20:14,rz?20:14],iconAnchor:[rz?10:7,rz?10:7]
-  });
+function filterTrafficReports(filter) {
+    currentTrafficFilter = filter;
+    let filtered = allReports.filter(r => r.type === 'traffic');
+    
+    if (filter === 'pending') filtered = filtered.filter(r => r.status === 'Pending');
+    else if (filter === 'progress') filtered = filtered.filter(r => r.status === 'In Progress');
+    else if (filter === 'resolved') filtered = filtered.filter(r => r.status === 'Resolved');
+    
+    const container = document.getElementById('trafficReportsList');
+    if (!container) return;
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-traffic-light"></i><br>No traffic reports found</div>';
+        return;
+    }
+    
+    container.innerHTML = filtered.map(report => {
+        const rz = isRedZone(report);
+        return `
+            <div class="report-item ${rz ? 'redzone' : ''}" onclick="zoomToReport('${report.location}')">
+                <div class="report-header">
+                    <span class="report-type type-traffic">🚦 Traffic</span>
+                    <span class="report-status status-${(report.status || 'pending').toLowerCase().replace(' ', '-')}">
+                        ${report.status || 'Pending'}
+                    </span>
+                </div>
+                <div class="report-desc">${(report.eventName || report.description || '-').substring(0, 80)}</div>
+                <div class="report-meta">
+                    <span><i class="fas fa-user"></i> ${report.userName || 'Unknown'}</span>
+                    <span><i class="far fa-calendar"></i> ${new Date(report.createdAt || report.reportedAt).toLocaleDateString()}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
-function initMap(data){
-  if(map) map.remove();
-  map = L.map('map').setView([17.45,78.39],12);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-  data.forEach(r=>{
-    if(!r.location||!r.location.includes(',')) return;
-    const [lat,lng]=r.location.split(',');
-    if(isNaN(lat)||isNaN(lng)) return;
-    const rz = isRedZone(r);
-    const color = rz?'#cc2222':'#7dba3f';
-    L.marker([parseFloat(lat),parseFloat(lng)],{icon:makeIcon(color,rz)}).addTo(map)
-      .bindPopup(`
-        <b style="color:${rz?'#ff4444':'#5cd68a'}">${rz?'🔴 RED ZONE — ':''}${(r.type||'').toUpperCase()}</b><br>
-        ${r.description||''}<br>
-        <i>Status: ${r.status||'Pending'}</i><br>
-        ${r.assignedWorker?`<b>👷 Worker: ${r.assignedWorker}</b><br>`:''}
-        <small>${fmtTime(r.reportedAt||r.createdAt)}</small>
-        ${r.resolvedAt?`<br><small style="color:#5cd68a;">Resolved: ${fmtTime(r.resolvedAt)}</small>`:''}
-      `);
-  });
+function updateMap() {
+    if (mainMap) mainMap.remove();
+    
+    mainMap = L.map('mainMap').setView([17.3850, 78.4867], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(mainMap);
+    
+    markers = [];
+    
+    allReports.forEach(report => {
+        if (!report.location) return;
+        const [lat, lng] = report.location.split(',').map(Number);
+        if (isNaN(lat) || isNaN(lng)) return;
+        
+        const isHigh = isRedZone(report);
+        let bgColor, letter;
+        
+        if (report.type === 'traffic') {
+            bgColor = isHigh ? '#ff0000' : '#ff8800';
+            letter = 'T';
+        } else {
+            bgColor = isHigh ? '#ff0000' : '#7dba3f';
+            letter = 'W';
+        }
+        
+        const icon = L.divIcon({
+            html: `<div style="width:34px;height:34px;background:${bgColor};border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;color:white;box-shadow:0 0 12px ${bgColor};">${letter}</div>`,
+            iconSize: [34, 34],
+            className: 'custom-marker'
+        });
+        
+        const marker = L.marker([lat, lng], { icon }).addTo(mainMap);
+        marker.bindPopup(`
+            <div style="min-width:220px;">
+                <b style="color:${bgColor};font-size:14px;">${report.type === 'waste' ? '🗑️ WASTE' : '🚦 TRAFFIC'}</b>
+                ${isHigh ? '<div style="color:#ff4444;margin:5px 0;">🔴 HIGH PRIORITY (24h+)</div>' : ''}
+                <div style="margin:8px 0;"><strong>${report.description || report.eventName || '-'}</strong></div>
+                <div><i class="fas fa-user"></i> ${report.userName || 'Unknown'}</div>
+                <div><i class="fas fa-tag"></i> ${report.status || 'Pending'}</div>
+                <div><i class="far fa-calendar"></i> ${new Date(report.createdAt || report.reportedAt).toLocaleString()}</div>
+            </div>
+        `);
+        markers.push(marker);
+    });
 }
 
+function zoomToReport(locationStr) {
+    if (!locationStr) return;
+    const [lat, lng] = locationStr.split(',').map(Number);
+    if (isNaN(lat) || isNaN(lng)) return;
+    mainMap.setView([lat, lng], 15);
+    showToast(`📍 Zooming to location`);
+}
+
+// Make functions global
+window.switchSection = switchSection;
+window.filterWasteReports = filterWasteReports;
+window.filterTrafficReports = filterTrafficReports;
+window.zoomToReport = zoomToReport;
+window.showToast = showToast;
+
+// Initialize
 loadReports();
 setInterval(loadReports, 15000);
 </script>

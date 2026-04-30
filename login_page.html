@@ -63,21 +63,32 @@ button:disabled{opacity:0.6;cursor:not-allowed;}
 }
 .message.error{background:rgba(220,53,69,0.3);color:#ff8888;display:block;}
 .message.success{background:rgba(40,167,69,0.3);color:#88ff88;display:block;}
+.role-info{
+    margin-top:20px;
+    padding:12px;
+    background:rgba(0,0,0,0.3);
+    border-radius:8px;
+    font-size:11px;
+    text-align:left;
+}
+.role-info p{margin:4px 0;color:#aaa;}
+.role-info strong{color:#7dba3f;}
 </style>
 </head>
 <body>
 <div class="container">
     <h2>🌱 RapidEco</h2>
-    <div class="subtitle">Smart Citizen Complaint System</div>
+    <div class="subtitle">Smart City Management System</div>
     
     <form id="authForm">
         <input type="text" id="name" placeholder="Full Name" style="display:none;">
         <input type="email" id="email" placeholder="Email" required>
-        <select id="role" required>
-            <option value="">Select Role</option>
-            <option value="Citizen">Citizen</option>
-            <option value="Admin">Municipal Admin</option>
-        </select>
+       <select id="role" required>
+    <option value="">Select Role</option>
+    <option value="Citizen">👤 Citizen</option>
+    <option value="Municipal">🏛️ Municipal Authority</option>  <!-- This must be "Municipal" -->
+    <option value="Admin">👑 System Admin</option>
+</select>
         <input type="password" id="password" placeholder="Password" required>
         <button type="submit" id="submitBtn">Login</button>
     </form>
@@ -88,8 +99,12 @@ button:disabled{opacity:0.6;cursor:not-allowed;}
     
     <div id="message" class="message"></div>
     
-    <div style="margin-top:20px;font-size:11px;color:#8aac60;">
-        ⚡ First user? Sign up as Admin first!
+    <div class="role-info">
+        <strong>📌 Role Guide:</strong>
+        <p>👤 <strong>Citizen</strong> - Report issues, view routes, track complaints</p>
+        <p>🏛️ <strong>Municipal Authority</strong> - Update status, assign workers, manage reports</p>
+        <p>👑 <strong>System Admin</strong> - View all data, monitor maps, full read-only access</p>
+        <p style="margin-top:8px;">💡 First user? Sign up as <strong>Admin</strong> first!</p>
     </div>
 </div>
 
@@ -187,10 +202,13 @@ document.getElementById('authForm').addEventListener('submit', async function(e)
             localStorage.setItem('currentUser', JSON.stringify(data.user));
             showMessage(`✅ Welcome ${data.user.name}! Redirecting...`, false);
             setTimeout(() => {
+                // Route to correct dashboard based on role
                 if (data.user.role === 'Citizen') {
                     window.location.href = 'citizen_dashboard.html';
-                } else {
+                } else if (data.user.role === 'Municipal') {
                     window.location.href = 'municipal_dashboard.html';
+                } else if (data.user.role === 'Admin') {
+                    window.location.href = 'admin_dashboard.html';
                 }
             }, 1000);
         } else {
