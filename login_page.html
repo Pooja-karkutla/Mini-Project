@@ -1,227 +1,208 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Login / Signup</title>
-
+<title>RapidEco - Login / Signup</title>
 <style>
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-}
-
+*{margin:0;padding:0;box-sizing:border-box;}
 body{
-    font-family:Arial;
-    height:100vh;
+    font-family:'Segoe UI',sans-serif;
+    min-height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    background:linear-gradient(135deg,#0f1a0f,#1c2a0c,#0f1a0f);
+    background:linear-gradient(135deg,#0f1a0f,#1c2a0c);
     color:white;
 }
-
 .container{
-    width:360px;
-    padding:25px;
-    background:rgba(255,255,255,0.08);
-    backdrop-filter:blur(10px);
-    border-radius:15px;
+    width:450px;
+    padding:40px;
+    background:rgba(255,255,255,0.1);
+    backdrop-filter:blur(12px);
+    border-radius:20px;
     text-align:center;
 }
-
-h2{
-    color:#7dba3f;
-    margin-bottom:10px;
-}
-
-/* INPUT WRAPPER */
-.inputBox{
-    position:relative;
-}
-
-/* FIELDS */
+h2{color:#7dba3f;margin-bottom:10px;font-size:32px;}
+.subtitle{color:#a5d6a7;font-size:13px;margin-bottom:25px;}
 input,select{
     width:100%;
-    height:45px;
-    padding:10px;
-    margin:8px 0;
+    padding:12px;
+    margin:10px 0;
     border:none;
-    border-radius:6px;
+    border-radius:8px;
     font-size:14px;
+    background:rgba(255,255,255,0.95);
 }
-
-/* EYE ICON */
-.eye{
-    position:absolute;
-    right:10px;
-    top:50%;
-    transform:translateY(-50%);
-    cursor:pointer;
-    font-size:14px;
-    color:black;
-}
-
-/* BUTTON */
 button{
     width:100%;
-    height:45px;
-    background:#2e4414;
+    padding:12px;
+    background:#7dba3f;
     color:white;
     border:none;
-    border-radius:6px;
+    border-radius:8px;
     cursor:pointer;
-    font-size:14px;
+    font-size:16px;
     font-weight:bold;
+    margin-top:15px;
+    transition:background 0.3s;
 }
-
-button:hover{
-    background:#3f5f1c;
-}
-
+button:hover{background:#6aa335;}
+button:disabled{opacity:0.6;cursor:not-allowed;}
 .toggle{
-    margin-top:10px;
+    margin-top:20px;
     font-size:13px;
     color:#a5d6a7;
     cursor:pointer;
 }
+.toggle:hover{text-decoration:underline;}
+.message{
+    margin-top:15px;
+    padding:10px;
+    border-radius:8px;
+    font-size:13px;
+    display:none;
+}
+.message.error{background:rgba(220,53,69,0.3);color:#ff8888;display:block;}
+.message.success{background:rgba(40,167,69,0.3);color:#88ff88;display:block;}
 </style>
 </head>
-
 <body>
-
 <div class="container">
-
-<h2 id="title">Login</h2>
-
-<form id="authForm">
-
-<input type="text" id="name" placeholder="Full Name" style="display:none;">
-
-<input type="email" id="email" placeholder="Email" required>
-
-<select id="role" required>
-    <option value="">Select Role</option>
-    <option value="Admin">Admin</option>
-    <option value="Citizen">Citizen</option>
-</select>
-
-<!-- PASSWORD -->
-<div class="inputBox">
-    <input type="password" id="password" placeholder="Password" required>
-    <span class="eye" id="eye1" onclick="togglePassword('password')" style="display:none;">👁</span>
-</div>
-
-<!-- CONFIRM PASSWORD -->
-<div class="inputBox">
-    <input type="password" id="confirmPassword" placeholder="Confirm Password" style="display:none;">
-    <span class="eye" id="eye2" onclick="togglePassword('confirmPassword')" style="display:none;">👁</span>
-</div>
-
-<button type="submit">Submit</button>
-
-</form>
-
-<p class="toggle" onclick="toggleMode()" id="toggleText">
-Don't have an account? Sign Up
-</p>
-
+    <h2>🌱 RapidEco</h2>
+    <div class="subtitle">Smart Citizen Complaint System</div>
+    
+    <form id="authForm">
+        <input type="text" id="name" placeholder="Full Name" style="display:none;">
+        <input type="email" id="email" placeholder="Email" required>
+        <select id="role" required>
+            <option value="">Select Role</option>
+            <option value="Citizen">Citizen</option>
+            <option value="Admin">Municipal Admin</option>
+        </select>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit" id="submitBtn">Login</button>
+    </form>
+    
+    <p class="toggle" onclick="toggleMode()" id="toggleText">
+        Don't have an account? Sign Up
+    </p>
+    
+    <div id="message" class="message"></div>
+    
+    <div style="margin-top:20px;font-size:11px;color:#8aac60;">
+        ⚡ First user? Sign up as Admin first!
+    </div>
 </div>
 
 <script>
-
+const API = 'http://localhost:5000';
 let isSignup = false;
-let users = JSON.parse(localStorage.getItem("users")) || [];
 
-/* TOGGLE LOGIN/SIGNUP */
-function toggleMode(){
+function showMessage(msg, isError = true) {
+    const msgDiv = document.getElementById('message');
+    msgDiv.textContent = msg;
+    msgDiv.className = `message ${isError ? 'error' : 'success'}`;
+    setTimeout(() => {
+        msgDiv.className = 'message';
+    }, 4000);
+}
+
+function toggleMode() {
     isSignup = !isSignup;
-
-    document.getElementById("title").innerText = isSignup ? "Sign Up" : "Login";
-
-    document.getElementById("name").style.display = isSignup ? "block" : "none";
-    document.getElementById("confirmPassword").style.display = isSignup ? "block" : "none";
-
-    /* 👁 SHOW ONLY IN SIGNUP */
-    document.getElementById("eye1").style.display = isSignup ? "block" : "none";
-    document.getElementById("eye2").style.display = isSignup ? "block" : "none";
-
-    document.getElementById("toggleText").innerText =
-        isSignup ? "Already have an account? Login" : "Don't have an account? Sign Up";
+    document.getElementById('name').style.display = isSignup ? 'block' : 'none';
+    document.getElementById('toggleText').innerText = isSignup ? 
+        'Already have an account? Login' : 'Don\'t have an account? Sign Up';
+    document.getElementById('submitBtn').innerText = isSignup ? 'Sign Up' : 'Login';
+    document.getElementById('message').className = 'message';
 }
 
-/* 👁 TOGGLE PASSWORD */
-function togglePassword(id){
-    let field = document.getElementById(id);
-    field.type = field.type === "password" ? "text" : "password";
-}
-
-/* FORM SUBMIT */
-document.getElementById("authForm").addEventListener("submit", function(e){
+document.getElementById('authForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-
-    let name = document.getElementById("name").value.trim();
-    let email = document.getElementById("email").value.trim();
-    let role = document.getElementById("role").value;
-    let password = document.getElementById("password").value;
-    let confirmPassword = document.getElementById("confirmPassword").value;
-
-    /* SIGNUP */
-    if(isSignup){
-
-        if(!name || !email || !role || !password || !confirmPassword){
-            alert("All fields required");
+    
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const role = document.getElementById('role').value;
+    const password = document.getElementById('password').value;
+    
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = isSignup ? 'Creating Account...' : 'Logging in...';
+    
+    if (isSignup) {
+        if (!name || !email || !role || !password) {
+            showMessage('❌ All fields are required', true);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign Up';
             return;
         }
-
-        if(password !== confirmPassword){
-            alert("Passwords do not match");
+        
+        if (password.length < 3) {
+            showMessage('❌ Password must be at least 3 characters', true);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign Up';
             return;
         }
-
-        let exists = users.find(u => u.email === email);
-        if(exists){
-            alert("User already exists");
-            return;
+        
+        try {
+            const res = await fetch(`${API}/api/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, role })
+            });
+            
+            const data = await res.json();
+            
+            if (data.success) {
+                showMessage(`✅ ${data.message} Please login now!`, false);
+                setTimeout(() => toggleMode(), 2000);
+            } else {
+                showMessage(`❌ ${data.message}`, true);
+            }
+        } catch (err) {
+            showMessage('❌ Server error. Make sure backend is running on port 5000', true);
         }
-
-        users.push({
-            id:"U"+Date.now(),
-            name,
-            email,
-            role,
-            password
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign Up';
+        return;
+    }
+    
+    // LOGIN
+    if (!email || !role || !password) {
+        showMessage('❌ Please fill all fields', true);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Login';
+        return;
+    }
+    
+    try {
+        const res = await fetch(`${API}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password, role })
         });
-
-        localStorage.setItem("users", JSON.stringify(users));
-
-        alert("Signup successful!");
-        toggleMode();
-        return;
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+            showMessage(`✅ Welcome ${data.user.name}! Redirecting...`, false);
+            setTimeout(() => {
+                if (data.user.role === 'Citizen') {
+                    window.location.href = 'citizen_dashboard.html';
+                } else {
+                    window.location.href = 'municipal_dashboard.html';
+                }
+            }, 1000);
+        } else {
+            showMessage(`❌ ${data.message}`, true);
+        }
+    } catch (err) {
+        showMessage('❌ Server error. Make sure backend is running on port 5000', true);
     }
-
-    /* LOGIN */
-    let user = users.find(u =>
-        u.email === email &&
-        u.password === password &&
-        u.role === role
-    );
-
-    if(!user){
-        alert("Invalid login");
-        return;
-    }
-
-    localStorage.setItem("currentUser", JSON.stringify(user));
-
-    if(user.role === "Citizen"){
-        window.location.href = "citizen_dashboard.html";
-    } else {
-        window.location.href = "admin_dashboard.html";
-    }
-
+    
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Login';
 });
-
 </script>
-
 </body>
 </html>

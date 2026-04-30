@@ -1,148 +1,165 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Citizen Profile</title>
-
+<title>Citizen Profile – RapidEco</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-body{
-    font-family:Arial;
-    background:#0f1a0f;
-    color:white;
-    padding:20px;
+:root{
+  --green:#7dba3f;--green-bright:#9be15d;
+  --bg:#0f1a0f;--card:#1c2a0c;--card2:#243310;
+  --border:#2e4414;--text:#e8f5d0;--muted:#8aac60;
 }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:28px;}
 
-/* BACK BUTTON */
+/* BACK */
 .back-btn{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:8px 16px;
-    margin-bottom:20px;
-    background:#2e4414;
-    border:none;
-    border-radius:8px;
-    color:white;
-    font-size:14px;
-    font-weight:bold;
-    cursor:pointer;
-    text-decoration:none;
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 18px;margin-bottom:28px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:9px;color:var(--text);font-size:13px;font-weight:600;
+  cursor:pointer;text-decoration:none;transition:border-color .2s;
 }
-.back-btn:hover{background:#3a5519;}
+.back-btn:hover{border-color:var(--green);}
+
+/* PAGE TITLE */
+.page-title{
+  font-family:'Syne',sans-serif;font-size:24px;font-weight:800;
+  color:var(--green-bright);margin-bottom:24px;
+}
 
 /* PROFILE CARD */
 .profile-card{
-    background:linear-gradient(135deg,#1c2a0c,#2e4414);
-    padding:20px;
-    border-radius:12px;
-    margin-bottom:20px;
+  background:linear-gradient(135deg,var(--card),var(--card2));
+  border:1px solid var(--border);border-radius:16px;
+  padding:24px 28px;margin-bottom:28px;
+}
+.profile-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;
+}
+.profile-row:last-child{border-bottom:none;}
+.profile-row .label{color:var(--muted);width:110px;flex-shrink:0;font-size:12px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;}
+.profile-row .val{font-weight:500;}
+
+/* ADDRESS EDIT */
+.addr-input{
+  padding:9px 13px;border-radius:8px;border:1px solid var(--border);
+  background:#131f0e;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;
+  width:240px;outline:none;transition:border-color .2s;margin-right:10px;
+}
+.addr-input:focus{border-color:var(--green);}
+.save-btn{
+  padding:9px 16px;border:none;border-radius:8px;
+  background:linear-gradient(135deg,var(--green),var(--green-bright));
+  color:#0f1a0f;font-weight:700;font-size:13px;cursor:pointer;
+}
+.edit-link{color:var(--green);font-size:12px;cursor:pointer;margin-left:10px;text-decoration:underline;}
+
+/* SECTION HEADER */
+.section-header{
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:700;
+  color:var(--green-bright);margin-bottom:14px;
 }
 
-/* BUTTONS */
-.action-btn{
-    padding:12px 18px;
-    margin:10px 10px 0 0;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    background:#7dba3f;
-    color:black;
-    font-weight:bold;
-    font-size:14px;
+/* NAV BUTTONS */
+.nav-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:32px;}
+.nav-btn{
+  padding:11px 22px;border:1px solid var(--border);border-radius:10px;
+  background:var(--card);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-weight:600;font-size:14px;cursor:pointer;transition:border-color .2s,background .2s;
 }
-.action-btn:hover{background:#9be15d;}
+.nav-btn:hover{border-color:var(--green);background:var(--card2);}
 
-input{
-    padding:8px;
-    border-radius:5px;
-    border:none;
-    margin-top:8px;
-    width:60%;
-    background:#1b2a1b;
-    color:white;
+/* TOAST */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--card);border:1px solid var(--green);color:var(--text);
+  padding:12px 24px;border-radius:10px;font-size:14px;font-weight:500;
+  z-index:9999;transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  opacity:0;pointer-events:none;
 }
-
-h2,h3{color:#7dba3f;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 </style>
 </head>
-
 <body>
 
-<a class="back-btn" onclick="window.location.href='citizen_dashboard.html'">
-← Back to Dashboard
-</a>
+<a class="back-btn" onclick="window.location.href='citizen_dashboard.html'">← Back to Dashboard</a>
 
-<h2>👤 Citizen Profile</h2>
+<div class="page-title">👤 Citizen Profile</div>
 
-<!-- PROFILE -->
+<!-- PROFILE INFO -->
 <div class="profile-card" id="profileInfo"></div>
 
-<!-- BUTTON SECTION -->
-<h3>📂 My Records</h3>
+<!-- NAVIGATION -->
+<div class="section-header" style="margin-top:28px;">📂 My Records</div>
+<div class="nav-btns">
+  <button class="nav-btn" onclick="openWaste()">🚮 Waste Reports</button>
+  <button class="nav-btn" onclick="openTraffic()">🚦 Traffic Reports</button>
+</div>
 
-<button class="action-btn" onclick="openWaste()">🚮 Waste Page</button>
-<button class="action-btn" onclick="openTraffic()">🚦 Traffic Page</button>
+<div class="toast" id="toast"></div>
 
 <script>
+let user = null;
+try{ user = JSON.parse(localStorage.getItem('currentUser')); } catch(e){}
+if(!user) user = {email:'guest@demo.com', name:'Guest User', role:'Citizen'};
 
-/* USER */
-let user = JSON.parse(localStorage.getItem("currentUser")) 
-|| {email:"guest@demo.com", name:"Guest User", role:"Citizen"};
-
-/* SAVE ADDRESS */
-function saveAddress(){
-    let addr = document.getElementById("addrInput").value;
-    user.address = addr;
-    localStorage.setItem("currentUser", JSON.stringify(user));
-    alert("Address saved!");
-    renderProfile();
-}
-
-/* PROFILE UI */
+/* ── PROFILE ── */
 function renderProfile(){
-
-let addrSection = "";
-
-if(!user.address){
+  let addrSection = '';
+  if(!user.address){
     addrSection = `
-        <input id="addrInput" placeholder="Enter Address">
-        <button onclick="saveAddress()">Add Address</button>
-    `;
-}else{
+      <div class="profile-row">
+        <span class="label">📍 Address</span>
+        <input class="addr-input" id="addrInput" placeholder="Enter your address">
+        <button class="save-btn" onclick="saveAddress()">Save</button>
+      </div>`;
+  } else {
     addrSection = `
-        <h3>📍 Address: ${user.address}</h3>
-        <button onclick="editAddress()">Edit Address</button>
-    `;
+      <div class="profile-row">
+        <span class="label">📍 Address</span>
+        <span class="val">${user.address}</span>
+        <span class="edit-link" onclick="editAddress()">Edit</span>
+      </div>`;
+  }
+  document.getElementById('profileInfo').innerHTML = `
+    <div class="profile-row"><span class="label">👤 Name</span><span class="val">${user.name||'N/A'}</span></div>
+    <div class="profile-row"><span class="label">📧 Email</span><span class="val">${user.email}</span></div>
+    <div class="profile-row"><span class="label">🎭 Role</span><span class="val">${user.role||'Citizen'}</span></div>
+    <div class="profile-row"><span class="label">🔒 Password</span><span class="val">••••••••</span></div>
+    ${addrSection}
+  `;
 }
 
-document.getElementById("profileInfo").innerHTML = `
-<h3>👤 Name: ${user.name || 'N/A'}</h3>
-<h3>📧 Email: ${user.email}</h3>
-<h3>🎭 Role: ${user.role || 'Citizen'}</h3>
-<h3>🔒 Password: ********</h3>
-${addrSection}
-`;
+function saveAddress(){
+  const v = (document.getElementById('addrInput')||{}).value?.trim();
+  if(!v){ showToast('Please enter an address'); return; }
+  user.address = v;
+  localStorage.setItem('currentUser', JSON.stringify(user));
+  renderProfile();
+  showToast('✅ Address saved!');
 }
 
-/* EDIT ADDRESS */
 function editAddress(){
-    document.getElementById("profileInfo").innerHTML += `
-        <input id="addrInput" value="${user.address}">
-        <button onclick="saveAddress()">Save</button>
-    `;
+  user.address = '';
+  renderProfile();
 }
 
-/* NAVIGATION */
-function openWaste(){
-    window.location.href = "waste.html";
+/* ── TOAST ── */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast';
+  void t.offsetWidth; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-function openTraffic(){
-    window.location.href = "traffic.html";
-}
+/* ── NAV ── */
+function openWaste()  { window.location.href='waste.html';   }
+function openTraffic(){ window.location.href='traffic.html'; }
 
+/* ── INIT ── */
 renderProfile();
-
 </script>
-
 </body>
 </html>
