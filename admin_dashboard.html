@@ -36,25 +36,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 }
 .logout-btn:hover{background:#c82333;}
 
-/* Main Layout - Left Panel Larger */
+/* Main Layout */
 .main-container{display:flex;height:100vh;padding-top:60px;}
 .sidebar{
-    width:450px;background:var(--card);border-right:2px solid var(--border);
+    width:420px;background:var(--card);border-right:2px solid var(--border);
     display:flex;flex-direction:column;overflow-y:auto;
 }
-/* Custom Scrollbar */
 .sidebar::-webkit-scrollbar{width:6px;}
 .sidebar::-webkit-scrollbar-track{background:var(--bg);}
 .sidebar::-webkit-scrollbar-thumb{background:var(--green);border-radius:10px;}
 
-/* Navigation Menu */
+/* Navigation - Only 3 items */
 .nav-menu{
     padding:20px;
     border-bottom:1px solid var(--border);
 }
 .nav-item{
     display:flex;align-items:center;gap:15px;
-    padding:14px 20px;margin-bottom:8px;
+    padding:14px 20px;margin-bottom:10px;
     background:rgba(0,0,0,0.2);border-radius:12px;
     cursor:pointer;transition:all 0.3s;
     border-left:3px solid transparent;
@@ -76,13 +75,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 .nav-item .badge{
     margin-left:auto;
     background:rgba(0,0,0,0.3);
-    padding:4px 8px;
+    padding:4px 10px;
     border-radius:20px;
-    font-size:11px;
+    font-size:12px;
     color:var(--green-bright);
 }
 
-/* Content Area inside Sidebar */
+/* Content Area */
 .sidebar-content{
     flex:1;
     padding:20px;
@@ -97,20 +96,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
     gap:10px;
 }
 
-/* Stats Grid */
+/* Stats Grid - 3 columns for better layout */
 .stats-grid{
-    display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
     margin-bottom:20px;
 }
 .stat-card{
     background:rgba(0,0,0,0.3);border:1px solid var(--border);
-    border-radius:12px;padding:15px;text-align:center;
+    border-radius:12px;padding:12px;text-align:center;
     transition:all 0.2s;cursor:pointer;
 }
 .stat-card:hover{border-color:var(--green);transform:translateY(-2px);}
-.stat-card .stat-number{font-size:28px;font-weight:800;font-family:'Syne',sans-serif;color:var(--green-bright);}
-.stat-card .stat-label{font-size:11px;color:var(--muted);margin-top:5px;}
-.stat-card i{font-size:24px;margin-bottom:8px;display:block;color:var(--green-bright);}
+.stat-card .stat-number{font-size:24px;font-weight:800;font-family:'Syne',sans-serif;color:var(--green-bright);}
+.stat-card .stat-label{font-size:10px;color:var(--muted);margin-top:5px;}
+.stat-card i{font-size:20px;margin-bottom:5px;display:block;color:var(--green-bright);}
 
 /* Filter Bar */
 .filter-bar{
@@ -138,37 +137,37 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 
 .report-item{
     background:rgba(0,0,0,0.3);border:1px solid var(--border);
-    border-radius:12px;padding:14px;cursor:pointer;
+    border-radius:12px;padding:12px;cursor:pointer;
     transition:all 0.2s;
 }
 .report-item:hover{border-color:var(--green);transform:translateX(3px);}
-.report-item.redzone{border-left:4px solid #ff4444;}
+.report-item.redzone{border-left:4px solid #ff4444;background:rgba(255,68,68,0.05);}
 .report-header{
     display:flex;justify-content:space-between;align-items:center;
-    margin-bottom:10px;flex-wrap:wrap;gap:5px;
+    margin-bottom:8px;flex-wrap:wrap;gap:5px;
 }
 .report-type{
-    font-size:11px;font-weight:bold;padding:4px 10px;border-radius:20px;
+    font-size:11px;font-weight:bold;padding:3px 10px;border-radius:20px;
 }
 .type-waste{background:#7dba3f20;color:#7dba3f;}
 .type-traffic{background:#f6ad5520;color:#f6ad55;}
 .report-status{
-    font-size:10px;padding:3px 10px;border-radius:20px;
+    font-size:10px;padding:2px 10px;border-radius:20px;
 }
 .status-pending{background:#f0a50020;color:#f0a500;}
 .status-progress{background:#63b3ed20;color:#63b3ed;}
 .status-resolved{background:#5cd68a20;color:#5cd68a;}
 .status-rejected{background:#ff555520;color:#ff5555;}
-.report-desc{font-size:13px;margin-bottom:8px;font-weight:500;}
-.report-meta{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;}
+.report-desc{font-size:12px;margin-bottom:6px;font-weight:500;}
+.report-meta{font-size:10px;color:var(--muted);display:flex;justify-content:space-between;}
 .badge-redzone{background:#ff444420;color:#ff4444;padding:2px 8px;border-radius:12px;font-size:9px;margin-left:8px;}
 
-/* Right Panel - Map Area */
+/* Right Panel - Map */
 .content-area{flex:1;padding:15px;display:flex;flex-direction:column;gap:15px;}
 .map-container{
     background:var(--card);border-radius:16px;overflow:hidden;
     border:1px solid var(--border);height:100%;
-    display:flex;flex-direction:column;
+    display:flex;flex-direction:column;position:relative;
 }
 .map-header{
     padding:12px 20px;background:rgba(0,0,0,0.3);border-bottom:1px solid var(--border);
@@ -180,32 +179,38 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 #mainMap{flex:1;width:100%;min-height:0;}
 
-/* Map Legend */
+/* Map Legend - Improved */
 .map-legend{
     position:absolute;bottom:20px;right:20px;z-index:999;
     background:rgba(15,26,15,.95);border:1px solid var(--border);
-    border-radius:12px;padding:12px 16px;font-size:12px;
+    border-radius:12px;padding:12px 16px;font-size:11px;
     backdrop-filter:blur(5px);
+    min-width:160px;
+}
+.map-legend-title{
+    font-size:11px;font-weight:bold;color:var(--green-bright);
+    margin-bottom:8px;border-bottom:1px solid var(--border);
+    padding-bottom:4px;
 }
 .map-legend div{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
 .legend-marker{
     width:28px;height:28px;border-radius:50%;display:flex;
-    align-items:center;justify-content:center;font-weight:bold;font-size:12px;
+    align-items:center;justify-content:center;font-weight:bold;font-size:11px;
 }
 .legend-traffic{background:#ff8800;color:white;}
 .legend-waste{background:#7dba3f;color:white;}
-.legend-redzone{background:#ff0000;color:white;}
+.legend-redzone{background:#ff0000;color:white;box-shadow:0 0 8px #ff0000;}
 
 /* Toast */
 .toast{
     position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    background:#28a745;color:white;padding:12px 24px;
-    border-radius:8px;z-index:1000;display:none;font-size:14px;
+    background:#28a745;color:white;padding:10px 20px;
+    border-radius:8px;z-index:1000;display:none;font-size:13px;
 }
 .empty-state{
     text-align:center;padding:40px;color:var(--muted);
 }
-.empty-state i{font-size:48px;margin-bottom:15px;opacity:0.5;}
+.empty-state i{font-size:40px;margin-bottom:10px;opacity:0.5;}
 </style>
 </head>
 <body>
@@ -222,13 +227,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 </div>
 
 <div class="main-container">
-    <!-- LEFT PANEL - LARGER SIZE (450px) -->
+    <!-- LEFT PANEL - Only 3 items -->
     <div class="sidebar">
-        <!-- Navigation Menu -->
         <div class="nav-menu">
             <div class="nav-item active" onclick="switchSection('overview')">
                 <i class="fas fa-chart-line"></i>
-                <span>Overview Dashboard</span>
+                <span>Overview</span>
                 <div class="badge" id="totalBadge">0</div>
             </div>
             <div class="nav-item" onclick="switchSection('waste')">
@@ -244,9 +248,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
         </div>
 
         <!-- Dynamic Content Area -->
-        <div class="sidebar-content" id="sidebarContent">
-            <!-- Overview Content loads here -->
-        </div>
+        <div class="sidebar-content" id="sidebarContent"></div>
     </div>
 
     <!-- RIGHT PANEL - MAP -->
@@ -258,9 +260,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
             </div>
             <div id="mainMap"></div>
             <div class="map-legend">
-                <div><div class="legend-marker legend-traffic">T</div> <span>Traffic Event</span></div>
-                <div><div class="legend-marker legend-waste">W</div> <span>Waste Report</span></div>
-                <div><div class="legend-marker legend-redzone">!</div> <span>High Priority (24h+)</span></div>
+                <div class="map-legend-title">📍 Map Legend</div>
+                <div><div class="legend-marker legend-traffic">T</div> <span>Traffic Event (Normal)</span></div>
+                <div><div class="legend-marker legend-waste">W</div> <span>Waste Report (Normal)</span></div>
+                <div><div class="legend-marker legend-redzone">!</div> <span><span style="color:#ff6666;">⚠️ HIGH PRIORITY (24h+)</span></span></div>
+                <div style="margin-top:6px; font-size:9px; color:#aaa;"><i class="fas fa-info-circle"></i> Red markers = Urgent action needed</div>
             </div>
         </div>
     </div>
@@ -289,7 +293,7 @@ function showToast(msg, isError = false) {
     toast.textContent = msg;
     toast.style.background = isError ? '#dc3545' : '#28a745';
     toast.style.display = 'block';
-    setTimeout(() => toast.style.display = 'none', 3000);
+    setTimeout(() => toast.style.display = 'none', 2500);
 }
 
 function logout() {
@@ -302,6 +306,12 @@ function isRedZone(report) {
     const reportDate = new Date(report.createdAt || report.reportedAt);
     const hoursDiff = (Date.now() - reportDate.getTime()) / (1000 * 60 * 60);
     return hoursDiff >= 24;
+}
+
+function getHoursElapsed(report) {
+    const reportDate = new Date(report.createdAt || report.reportedAt);
+    const hoursDiff = (Date.now() - reportDate.getTime()) / (1000 * 60 * 60);
+    return Math.floor(hoursDiff);
 }
 
 async function loadReports() {
@@ -354,13 +364,13 @@ function loadOverviewContent() {
     const redzone = allReports.filter(r => isRedZone(r) && r.status !== 'Resolved' && r.status !== 'Rejected').length;
     
     container.innerHTML = `
-        <h3><i class="fas fa-chart-simple"></i> Dashboard Overview</h3>
+        <h3><i class="fas fa-chart-simple"></i> Overview Dashboard</h3>
         
         <div class="stats-grid">
             <div class="stat-card" onclick="showToast('Total reports: ${total}')">
                 <i class="fas fa-list"></i>
                 <div class="stat-number">${total}</div>
-                <div class="stat-label">Total Reports</div>
+                <div class="stat-label">Total</div>
             </div>
             <div class="stat-card" onclick="showToast('Pending: ${pending}')">
                 <i class="fas fa-hourglass-half"></i>
@@ -385,7 +395,7 @@ function loadOverviewContent() {
             <div class="stat-card" onclick="showToast('Red Zone: ${redzone} complaints >24h')">
                 <i class="fas fa-exclamation-triangle"></i>
                 <div class="stat-number">${redzone}</div>
-                <div class="stat-label">Red Zone (24h+)</div>
+                <div class="stat-label">Red Zone</div>
             </div>
         </div>
         
@@ -432,33 +442,28 @@ function loadWasteContent() {
     let wasteReports = allReports.filter(r => r.type === 'waste');
     
     container.innerHTML = `
-        <h3><i class="fas fa-trash-alt"></i> Waste Management Reports</h3>
+        <h3><i class="fas fa-trash-alt"></i> Waste Reports</h3>
         
         <div class="stats-grid">
-            <div class="stat-card" onclick="filterWasteReports('all')">
+            <div class="stat-card">
                 <i class="fas fa-list"></i>
                 <div class="stat-number">${wasteReports.length}</div>
                 <div class="stat-label">Total Waste</div>
             </div>
-            <div class="stat-card" onclick="filterWasteReports('pending')">
+            <div class="stat-card">
                 <i class="fas fa-hourglass-half"></i>
                 <div class="stat-number">${wasteReports.filter(r => r.status === 'Pending').length}</div>
                 <div class="stat-label">Pending</div>
             </div>
-            <div class="stat-card" onclick="filterWasteReports('progress')">
+            <div class="stat-card">
                 <i class="fas fa-spinner"></i>
                 <div class="stat-number">${wasteReports.filter(r => r.status === 'In Progress').length}</div>
                 <div class="stat-label">In Progress</div>
             </div>
-            <div class="stat-card" onclick="filterWasteReports('resolved')">
-                <i class="fas fa-check-circle"></i>
-                <div class="stat-number">${wasteReports.filter(r => r.status === 'Resolved').length}</div>
-                <div class="stat-label">Resolved</div>
-            </div>
         </div>
         
         <div class="filter-bar">
-            <button class="filter-btn ${currentWasteFilter === 'all' ? 'active' : ''}" onclick="filterWasteReports('all')">All Waste</button>
+            <button class="filter-btn ${currentWasteFilter === 'all' ? 'active' : ''}" onclick="filterWasteReports('all')">All</button>
             <button class="filter-btn ${currentWasteFilter === 'pending' ? 'active' : ''}" onclick="filterWasteReports('pending')">Pending</button>
             <button class="filter-btn ${currentWasteFilter === 'progress' ? 'active' : ''}" onclick="filterWasteReports('progress')">In Progress</button>
             <button class="filter-btn ${currentWasteFilter === 'resolved' ? 'active' : ''}" onclick="filterWasteReports('resolved')">Resolved</button>
@@ -482,7 +487,7 @@ function filterWasteReports(filter) {
     if (!container) return;
     
     if (filtered.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-trash-alt"></i><br>No waste reports found</div>';
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-trash-alt"></i><br>No waste reports</div>';
         return;
     }
     
@@ -512,33 +517,28 @@ function loadTrafficContent() {
     let trafficReports = allReports.filter(r => r.type === 'traffic');
     
     container.innerHTML = `
-        <h3><i class="fas fa-traffic-light"></i> Traffic Management Reports</h3>
+        <h3><i class="fas fa-traffic-light"></i> Traffic Reports</h3>
         
         <div class="stats-grid">
-            <div class="stat-card" onclick="filterTrafficReports('all')">
+            <div class="stat-card">
                 <i class="fas fa-list"></i>
                 <div class="stat-number">${trafficReports.length}</div>
                 <div class="stat-label">Total Traffic</div>
             </div>
-            <div class="stat-card" onclick="filterTrafficReports('pending')">
+            <div class="stat-card">
                 <i class="fas fa-hourglass-half"></i>
                 <div class="stat-number">${trafficReports.filter(r => r.status === 'Pending').length}</div>
                 <div class="stat-label">Pending</div>
             </div>
-            <div class="stat-card" onclick="filterTrafficReports('progress')">
+            <div class="stat-card">
                 <i class="fas fa-spinner"></i>
                 <div class="stat-number">${trafficReports.filter(r => r.status === 'In Progress').length}</div>
                 <div class="stat-label">In Progress</div>
             </div>
-            <div class="stat-card" onclick="filterTrafficReports('resolved')">
-                <i class="fas fa-check-circle"></i>
-                <div class="stat-number">${trafficReports.filter(r => r.status === 'Resolved').length}</div>
-                <div class="stat-label">Resolved</div>
-            </div>
         </div>
         
         <div class="filter-bar">
-            <button class="filter-btn ${currentTrafficFilter === 'all' ? 'active' : ''}" onclick="filterTrafficReports('all')">All Traffic</button>
+            <button class="filter-btn ${currentTrafficFilter === 'all' ? 'active' : ''}" onclick="filterTrafficReports('all')">All</button>
             <button class="filter-btn ${currentTrafficFilter === 'pending' ? 'active' : ''}" onclick="filterTrafficReports('pending')">Pending</button>
             <button class="filter-btn ${currentTrafficFilter === 'progress' ? 'active' : ''}" onclick="filterTrafficReports('progress')">In Progress</button>
             <button class="filter-btn ${currentTrafficFilter === 'resolved' ? 'active' : ''}" onclick="filterTrafficReports('resolved')">Resolved</button>
@@ -562,7 +562,7 @@ function filterTrafficReports(filter) {
     if (!container) return;
     
     if (filtered.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-traffic-light"></i><br>No traffic reports found</div>';
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-traffic-light"></i><br>No traffic reports</div>';
         return;
     }
     
@@ -602,7 +602,8 @@ function updateMap() {
         if (isNaN(lat) || isNaN(lng)) return;
         
         const isHigh = isRedZone(report);
-        let bgColor, letter;
+        const hoursElapsed = getHoursElapsed(report);
+        let bgColor, letter, markerSize, glowIntensity;
         
         if (report.type === 'traffic') {
             bgColor = isHigh ? '#ff0000' : '#ff8800';
@@ -612,32 +613,58 @@ function updateMap() {
             letter = 'W';
         }
         
+        // Make high priority markers larger and with glow
+        if (isHigh) {
+            markerSize = 38;
+            glowIntensity = '0 0 16px #ff0000';
+        } else {
+            markerSize = 32;
+            glowIntensity = '0 0 8px ' + bgColor;
+        }
+        
         const icon = L.divIcon({
-            html: `<div style="width:34px;height:34px;background:${bgColor};border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;color:white;box-shadow:0 0 12px ${bgColor};">${letter}</div>`,
-            iconSize: [34, 34],
+            html: `<div style="width:${markerSize}px;height:${markerSize}px;background:${bgColor};border-radius:50%;border:3px solid white;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;color:white;box-shadow:${glowIntensity};position:relative;">
+                        ${letter}
+                        ${isHigh ? '<div style="position:absolute;top:-15px;right:-15px;background:#ff0000;color:white;font-size:9px;padding:2px 5px;border-radius:12px;white-space:nowrap;font-weight:bold;">🔴 24h+</div>' : ''}
+                    </div>`,
+            iconSize: [markerSize, markerSize],
             className: 'custom-marker'
         });
         
         const marker = L.marker([lat, lng], { icon }).addTo(mainMap);
+        
+        // Enhanced popup with clear high priority indication
         marker.bindPopup(`
-            <div style="min-width:220px;">
-                <b style="color:${bgColor};font-size:14px;">${report.type === 'waste' ? '🗑️ WASTE' : '🚦 TRAFFIC'}</b>
-                ${isHigh ? '<div style="color:#ff4444;margin:5px 0;">🔴 HIGH PRIORITY (24h+)</div>' : ''}
-                <div style="margin:8px 0;"><strong>${report.description || report.eventName || '-'}</strong></div>
+            <div style="min-width:240px;">
+                ${isHigh ? '<div style="background:#ff0000;color:white;padding:5px 10px;border-radius:8px;margin-bottom:8px;font-weight:bold;text-align:center;">⚠️ HIGH PRIORITY - ' + hoursElapsed + ' HOURS ELAPSED ⚠️</div>' : ''}
+                <b style="color:${bgColor};font-size:15px;">${report.type === 'waste' ? '🗑️ WASTE REPORT' : '🚦 TRAFFIC EVENT'}</b>
+                <div style="margin:10px 0;"><strong>${report.description || report.eventName || '-'}</strong></div>
                 <div><i class="fas fa-user"></i> ${report.userName || 'Unknown'}</div>
-                <div><i class="fas fa-tag"></i> ${report.status || 'Pending'}</div>
-                <div><i class="far fa-calendar"></i> ${new Date(report.createdAt || report.reportedAt).toLocaleString()}</div>
+                <div><i class="fas fa-tag"></i> Status: <span style="font-weight:bold;">${report.status || 'Pending'}</span></div>
+                <div><i class="far fa-calendar"></i> Reported: ${new Date(report.createdAt || report.reportedAt).toLocaleString()}</div>
+                ${isHigh ? `<div style="margin-top:5px;color:#ff0000;font-weight:bold;"><i class="fas fa-clock"></i> ${hoursElapsed} hours pending - URGENT!</div>` : ''}
+                ${report.assignedWorker ? `<div><i class="fas fa-user-hard-hat"></i> Worker: ${report.assignedWorker}</div>` : '<div style="color:#ff8800;"><i class="fas fa-exclamation-triangle"></i> No worker assigned</div>'}
+                ${report.resolvedAt ? `<div><i class="fas fa-check-circle" style="color:#5cd68a;"></i> Resolved: ${new Date(report.resolvedAt).toLocaleString()}</div>` : ''}
             </div>
         `);
+        
         markers.push(marker);
     });
+    
+    // If there are red zone reports, show a toast notification
+    const redZoneCount = allReports.filter(r => isRedZone(r)).length;
+    if (redZoneCount > 0) {
+        setTimeout(() => {
+            showToast(`⚠️ ${redZoneCount} high priority complaint(s) >24h - Red markers on map`, false);
+        }, 1000);
+    }
 }
 
 function zoomToReport(locationStr) {
     if (!locationStr) return;
     const [lat, lng] = locationStr.split(',').map(Number);
     if (isNaN(lat) || isNaN(lng)) return;
-    mainMap.setView([lat, lng], 15);
+    mainMap.setView([lat, lng], 16);
     showToast(`📍 Zooming to location`);
 }
 
